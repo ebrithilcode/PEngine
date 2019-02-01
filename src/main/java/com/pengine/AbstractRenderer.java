@@ -18,11 +18,7 @@ public abstract class AbstractRenderer extends Component {
     return false;
   }
 
-  @Override
-  public boolean lateUpdate() {
-    show();
-    return false;
-  }
+  public boolean lateUpdate() { return false; }
 
 }
 

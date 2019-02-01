@@ -15,14 +15,17 @@ public class QuadTree {
   QuadTree[] children;
   Boundary room;
   float maxSpeed;
+  SAT sat;
 
-  public QuadTree(){
+  public QuadTree(SAT s){
+    sat = s;
     holdObjects = new ArrayList<GameObject>();
     children = new QuadTree[0];
     room = new Boundary(new Vector(0,0), new Vector(APPLET.width, APPLET.height));
   }
 
-  public QuadTree(QuadTree p) {
+  public QuadTree(QuadTree p, SAT s) {
+    sat = s;
     holdObjects = new ArrayList<GameObject>();
     children = new QuadTree[0];
     room = new Boundary(new Vector(0,0), new Vector(APPLET.width, APPLET.height));
@@ -42,11 +45,11 @@ public class QuadTree {
 
   public void sortIn(GameObject g) {
     Boundary b = g.bounds;
-    if (holdObjects.size()>5) {
+    if (holdObjects.size()>1) {
       if (children.length == 0) {
         children = new QuadTree[4];
         for (int i=0;i<4;i++) {
-          children[i] = new QuadTree(this);
+          children[i] = new QuadTree(this, sat);
         }
         children[0].room = new Boundary(room.pos, room.dim.cdiv(2));
         children[1].room = new Boundary(room.pos.cadd(new Vector(room.dim.x/2f,0)), room.dim.cdiv(2));
@@ -63,28 +66,28 @@ public class QuadTree {
     holdObjects.add(g);
   }
 
-  public void manage(SAT sat) {
-    toCheck = new ArrayList<>();
+  public void manage() {
+    toCheck = new ArrayList<GameObject>();
     toCheck.addAll(holdObjects);
     if (parent!=null)
-    toCheck.addAll(parent.toCheck);
-    float steps = maxSpeed / 0.1f;
-    //steps = 1000;
-    steps = 1;
-    float f = 20;
-    for (int i=0;i<steps;i++) {
-      for (GameObject g: holdObjects) {
-        g.deltaTime = 1.0f/(steps*f);
-        g.movement();
-      }
-      //sat.manageCollisions(holdObjects, toCheck);
-      sat.solve();
+      toCheck.addAll(parent.toCheck);
+
+
+    //Some kind of mixed postorder thing?
+    for (QuadTree qt: children) {
+      qt.manage();
+    }
+
+
+    for (GameObject g: holdObjects) {
+      g.movement();
+    }
+
+    sat.manageCollisions(holdObjects, toCheck);
+    sat.solve();
+
     for (GameObject g: holdObjects) {
       g.lateCollisionSetup();
-    }
-    }
-    for (QuadTree qt: children) {
-      qt.manage(sat);
     }
   }
 
@@ -100,7 +103,7 @@ public class QuadTree {
   }
 
   public void setup() {
-    getMaxSpeed();
+    //getMaxSpeed();
     postOrderSort();
   }
 

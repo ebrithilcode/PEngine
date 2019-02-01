@@ -112,51 +112,29 @@ public class SAT {
   }
 
   OverlapReturn overlap(Projection px1, Projection px2, Projection py1, Projection py2, int circle) {
-    float x1 = px1.val;
-    float x2 = px2.val;
-    float y1 = py1.val;
-    float y2 = py2.val;
-    OverlapReturn ret = new OverlapReturn();
+    float x1 = px1.val, x2 = px2.val, y1 = py1.val, y2 = py2.val;new OverlapReturn();
     ret.circle = circle;
     ret.out2 = 0;
     if (circle==0) {
       if (inbetween(x1,x2,y1) || inbetween(x1, x2, y2) || inbetween(y1, y2, x1)) {
         if (APPLET.abs(x1 - y2) < APPLET.abs(x2 - y1)) {
           ret.out2 = x1 - y2;
-          ret.x1y2 = true;
           ret.p1 = px1.truePoint;
           ret.p2 = py2.truePoint;
         } else {
            ret.out2 = x2 - y1;
-           ret.x1y2 = false;
            ret.p1 = px2.truePoint;
            ret.p2 = py1.truePoint;
-        }
-      }
-    } else if (circle==1) {
-     if (inbetween(y1, y2, x1+x2) || inbetween(y1, y2, x1 - x2) || inbetween(x1 - x2, x1 + x2, y1)) {
-       if (APPLET.abs((x1 - x2) - y2) < APPLET.abs( (x1 + x2) - y1)) {
-          ret.out2 = (x1-x2) - y2;
-          ret.x1y2 = true;
-          ret.p1 = px1.truePoint;
-          ret.p2 = py2.truePoint;
-        } else {
-          ret.out2 = (x1+x2) - y1;
-          ret.x1y2 =false;
-          ret.p1 = px1.truePoint;
-          ret.p2 = py1.truePoint;
         }
       }
     } else if (circle==2) {
       if (inbetween(x1, x2, y1+y2) || inbetween(x1, x2, y1 - y2) || inbetween(y1 - y2, y1 + y2, x1)) {
         if (APPLET.abs(x2 - (y1 - y2)) < APPLET.abs(x1 - (y1 + y2))) {
           ret.out2 = x2 - (y1 - y2);
-          ret.x1y2 = false;
           ret.p1 = px2.truePoint;
           ret.p2 = py1.truePoint;
         } else {
           ret.out2 = x1 - (y1+y2);
-          ret.x1y2 = true;
           ret.p1 = px1.truePoint;
           ret.p2 = py1.truePoint;
         }
@@ -186,7 +164,7 @@ public class SAT {
 
 
 
-  public Projection minAll(Projection[] ar) {
+  private Projection minAll(Projection[] ar) {
     float m = ar[0].val;
     Projection best = ar[0];
     for (Projection f: ar) {
@@ -200,7 +178,7 @@ public class SAT {
     return best;
   }
 
-  public Projection maxAll(Projection[] ar) {
+  private Projection maxAll(Projection[] ar) {
     float m = ar[0].val;
     Projection best = ar[0];
     for (Projection f: ar) {
@@ -215,7 +193,7 @@ public class SAT {
   }
 
   //Brute force
-  public void manageCollisions(List<GameObject> objects) {
+  /*void manageCollisions(List<GameObject> objects) {
     for (int i=0;i<objects.size()-1;i++) {
       List<Collider> possibles1 = objects.get(i).getAllComponentsOfType(Collider.class);
       for (Collider c1: possibles1) {
@@ -234,27 +212,29 @@ public class SAT {
         }
       }
     }
-  }
-
-  //Hopefully logn
-  /*void manageCollisions(ArrayList<GameObject> obs1, ArrayList<GameObject> obs2) {
-    for (int i=0;i<obs1.size();i++) {
-      if (obs1.get(i).getComponent(Collider.class) == null) continue;
-      for (int o=i+1;o<obs2.size();o++) {
-        if (obs2.get(o).getComponent(Collider.class)== null) continue;
-          Collider c1 = (Collider) obs1.get(i).getComponent(Collider.class);
-          Collider c2 = (Collider) obs2.get(o).getComponent(Collider.class);
-          Vector[] p = sat.isColliding(c1,c2);
-          if (p[0].mag()!=0) {
-            obs1.get(i).onCollision(c2, p[0].cmult(-1));
-            obs2.get(o).onCollision(c1, p[0]);
-            collisions.add(new Collision(c1, c2, p[0], p[1]));
-          }
-      }
-    }
   }*/
+    void manageCollisions(List<GameObject> obs1, List<GameObject> obs2) {
+        for (int i=0;i<obs1.size();i++) {
+            ArrayList<Collider> possibles1 = obs1.get(i).getComponent(Collider.class);
+            for (Collider c1: possibles1) {
+                for (int o=i+1;o<obs2.size();o++) {
+                    for (Collider c2: obs2.get(o).getComponent(Collider.class)) {
+                        if (!c1.blackList.contains(c2) && !c2.blackList.contains(c1)) {
+                            Vector[] p = isColliding(c1,c2);
+                            if (p[0].mag()!=0) {
+                                boolean a1 = obs1.get(i).onCollision(c2, p[0].cmult(-1), c1);
+                                boolean a2 = obs2.get(o).onCollision(c1, p[0].copy(), c2);
+                                if (a1&&a2&&!c1.isTrigger&&!c2.isTrigger)
+                                    collisions.add(new Collision(c1, c2, p[0], p[1]));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 
-  public void solve() {
+  void solve() {
     //Sort with (by?) mass
     for (int i=0;i<collisions.size()-1;i++) {
       for (int o=i+1;o<collisions.size();o++) {
