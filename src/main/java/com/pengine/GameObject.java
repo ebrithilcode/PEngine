@@ -24,6 +24,8 @@ public class GameObject implements Updatable {
   boolean lockRotation;
   float collisionEfficency;
 
+  public int renderingPriority;
+
   List<Collider> collisionsDuringFrame;
   List<Collider> collisionsPreviousFrame;
 
@@ -38,6 +40,10 @@ public class GameObject implements Updatable {
 
     collisionsDuringFrame = new ArrayList<>();
     collisionsPreviousFrame = new ArrayList<>();
+  }
+
+  public void kill() {
+    dead = true;
   }
 
   public <T extends Component> List<T> getAllComponentsOfType(Class<T> cl) {
@@ -127,6 +133,13 @@ public class GameObject implements Updatable {
     //   }
     // }
     return mass;
+  }
+  void render() {
+    for (Component c: components) {
+      if (c instanceof AbstractRenderer) {
+        ((AbstractRenderer)c).show();
+      }
+    }
   }
 
   public boolean onCollision(Collider other, Vector out, Collider mine) {

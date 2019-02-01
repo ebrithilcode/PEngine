@@ -11,11 +11,14 @@ public class PEngine {
 
   private ArrayList<GameObject> objects = new ArrayList<>();
   private SAT sat = new SAT();
-  private QuadTree qt = new QuadTree();
+  private QuadTree qt = new QuadTree(sat);
   float maxMove = 0.1f;
   int steps = 1;
   public float floorFriction = 1.0f;
+  public boolean useFloorFriction;
   public ArrayList<Vector> globalForces = new ArrayList<>();
+
+  PhysicsThread pt = new PhysicsThread();
 
   public PEngine(PApplet applet) {
     APPLET = applet;
@@ -27,52 +30,13 @@ public class PEngine {
     qt.room.infinite = true;
   }
 
+  void start() {
+    pt.start();
+  }
+
   void draw() {
-    APPLET.colorMode(APPLET.HSB);
-    APPLET.background(APPLET.frameCount/5f%255, 255, 255);
-    APPLET.colorMode(APPLET.RGB);
-    APPLET.background(255);
     for (int i=0;i<objects.size();i++) {
-      if (objects.get(i).earlyUpdate()) {
-        objects.remove(i);
-        i--;
-      }
-    }
-
-    // qt.setup();
-    // qt.manage();
-
-    for (GameObject g: objects) g.movement();
-    sat.manageCollisions(objects);
-    sat.solve();
-    for (GameObject g: objects) g.lateCollisionSetup();
-
-
-    for (int i=0;i<objects.size();i++) {
-      if (objects.get(i).update()) {
-        objects.remove(i);
-        i--;
-      }
-    }
-
-    for (Vector v: globalForces) {
-      for (GameObject g: objects) {
-        if (g.getMass()>0 && !g.noGravity) {
-          g.addVelocity(v.cdiv(g.getMass()*APPLET.frameRate));
-        }
-      }
-    }
-    for (GameObject g: objects) {
-      Vector fri = g.vel.cmult(-(g.friction+floorFriction)/2f);
-      g.vel.add(fri);
-    }
-
-    for (int i=0;i<objects.size();i++) {
-      if (objects.get(i).lateUpdate()) {
-        objects.remove(i);
-        i--;
-
-      }
+      objects.get(i).render();
     }
   }
   float getMaxSpeed() {
@@ -83,7 +47,15 @@ public class PEngine {
     return max;
   }
   void addObject(GameObject g) {
-    objects.add(g);
+    boolean inserted = false;
+    for (int i=0;i<objects.size();i++) {
+      if (objects.get(i).renderingPriority > g.renderingPriority) {
+        objects.add(i, g);
+        inserted = true;
+        break;
+      }
+    }
+    if (!inserted) objects.add(g);
     g.setup();
     qt.sortIn(g);
   }
@@ -122,5 +94,79 @@ public class PEngine {
       }
     }
     return null;
+  }
+
+  class PhysicsThread extends Thread {
+
+    int frameStart;
+    float deltaTime = 0;
+
+    boolean bruteForce = false;
+    public void run() {
+      while (true) {
+        frameStart = APPLET.millis();
+        managePhysics();
+        deltaTime = (APPLET.millis()-frameStart) / 1000f;
+        frameStart = APPLET.millis();
+      }
+    }
+
+    void managePhysics() {
+      for (int i=0;i<objects.size();i++) {
+        if (objects.get(i).earlyUpdate()) {
+          objects.remove(i);
+          i--;
+        }
+      }
+
+      //Hopefully soon quadtree collisionManagement in logn
+      if (!bruteForce) {
+        qt.setup();
+        qt.manage();
+
+
+        //Just n squared at the time
+      } /*else {
+        for (GameObject g: objects) {
+          g.deltaTime = deltaTime;
+          g.movement();
+        }
+        sat.manageCollisions(objects);
+        sat.solve();
+        for (GameObject g: objects) g.lateCollisionSetup();
+      }*/
+
+
+      for (int i=0;i<objects.size();i++) {
+        if (objects.get(i).update()) {
+          objects.remove(i);
+          i--;
+        }
+      }
+
+      //applies global forces (Like gravity)
+      for (Vector v: globalForces) {
+        for (GameObject g: objects) {
+          if (g.getMass()>0 && !g.noGravity) {
+            g.addVelocity(v.cdiv(g.getMass()*APPLET.frameRate));
+          }
+        }
+      }
+
+      //Floor friction
+      if (useFloorFriction) {
+        for (GameObject g: objects) {
+          Vector fri = g.vel.cmult(-(g.friction+floorFriction)/2f);
+          g.vel.add(fri);
+        }
+      }
+
+      for (int i=0;i<objects.size();i++) {
+        if (objects.get(i).lateUpdate()) {
+          objects.remove(i);
+          i--;
+        }
+      }
+    }
   }
 }

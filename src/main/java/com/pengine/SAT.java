@@ -112,7 +112,8 @@ public class SAT {
   }
 
   OverlapReturn overlap(Projection px1, Projection px2, Projection py1, Projection py2, int circle) {
-    float x1 = px1.val, x2 = px2.val, y1 = py1.val, y2 = py2.val;new OverlapReturn();
+    float x1 = px1.val, x2 = px2.val, y1 = py1.val, y2 = py2.val;
+    OverlapReturn ret = new OverlapReturn();
     ret.circle = circle;
     ret.out2 = 0;
     if (circle==0) {
@@ -215,10 +216,10 @@ public class SAT {
   }*/
     void manageCollisions(List<GameObject> obs1, List<GameObject> obs2) {
         for (int i=0;i<obs1.size();i++) {
-            ArrayList<Collider> possibles1 = obs1.get(i).getComponent(Collider.class);
+            List<Collider> possibles1 = obs1.get(i).getAllComponentsOfType(Collider.class);
             for (Collider c1: possibles1) {
                 for (int o=i+1;o<obs2.size();o++) {
-                    for (Collider c2: obs2.get(o).getComponent(Collider.class)) {
+                    for (Collider c2: obs2.get(o).getAllComponentsOfType(Collider.class)) {
                         if (!c1.blackList.contains(c2) && !c2.blackList.contains(c1)) {
                             Vector[] p = isColliding(c1,c2);
                             if (p[0].mag()!=0) {
@@ -235,17 +236,13 @@ public class SAT {
     }
 
   void solve() {
-    //Sort with (by?) mass
+    //Sort by mass
     for (int i=0;i<collisions.size()-1;i++) {
       for (int o=i+1;o<collisions.size();o++) {
-        float mc1_1 = collisions.get(i).c1.parent.mass;
-        mc1_1 = mc1_1>0? mc1_1 : Float.MAX_VALUE;
-        float mc1_2 = collisions.get(i).c2.parent.mass;
-        mc1_2 = mc1_2>0? mc1_2 : Float.MAX_VALUE;
-        float mc2_1 = collisions.get(o).c1.parent.mass;
-        mc2_1 = mc2_1>0 ? mc2_1 : Float.MAX_VALUE;
-        float mc2_2 = collisions.get(o).c2.parent.mass;
-        mc2_2 = mc2_2>0 ? mc2_2 : Float.MAX_VALUE;
+        float mc1_1 = minToMax(collisions.get(i).c1.parent.mass);
+        float mc1_2 = minToMax(collisions.get(i).c2.parent.mass);
+        float mc2_1 = minToMax(collisions.get(o).c1.parent.mass);
+        float mc2_2 = minToMax(collisions.get(o).c2.parent.mass);
         if (mc1_1+mc1_2>mc2_1+mc2_2) {
           Collision c = collisions.get(i);
           collisions.set(i, collisions.get(o));
@@ -263,6 +260,9 @@ public class SAT {
       }
       collisions.remove(i);
     }
+  }
+  private static float minToMax(float f) {
+    return f>0? f : Float.MAX_VALUE;
   }
 
   /* -------------------------------- private inner classes for return purposes -------------------------------- */
