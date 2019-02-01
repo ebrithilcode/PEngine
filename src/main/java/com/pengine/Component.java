@@ -1,7 +1,6 @@
 package com.pengine;
 
-import static processing.core.PApplet.cos;
-import static processing.core.PApplet.sin;
+import static com.pengine.PEngine.APPLET;
 
 public abstract class Component implements Updatable {
 
@@ -28,8 +27,8 @@ public abstract class Component implements Updatable {
 
   public Vector rotateVector(Vector vec, Vector center, float deg) {
     Vector toRot = vec.copy().sub(center);
-    float re = cos(deg);
-    float im = sin(deg);
+    float re = APPLET.cos(deg);
+    float im = APPLET.sin(deg);
     Vector newRot = new Vector(toRot.x * re - toRot.y * im, toRot.x * im + toRot.y * re);
     return newRot.add(center);
   }
