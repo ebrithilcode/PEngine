@@ -35,8 +35,8 @@ public class PEngine {
   }
 
   void draw() {
-    for (int i=0;i<objects.size();i++) {
-      objects.get(i).render();
+    for (GameObject g : objects) {
+      g.render();
     }
   }
   float getMaxSpeed() {
@@ -96,12 +96,13 @@ public class PEngine {
     return null;
   }
 
-  class PhysicsThread extends Thread {
+  private class PhysicsThread extends Thread {
 
     int frameStart;
     float deltaTime = 0;
 
     boolean bruteForce = false;
+
     public void run() {
       while (true) {
         frameStart = APPLET.millis();
@@ -119,13 +120,13 @@ public class PEngine {
         }
       }
 
-      //Hopefully soon quadtree collisionManagement in logn
+      //Hopefully soon quadtree collisionManagement in O(log n)
       if (!bruteForce) {
         qt.setup();
         qt.manage();
 
 
-        //Just n squared at the time
+        //Just O(n^2)at the time
       } /*else {
         for (GameObject g: objects) {
           g.deltaTime = deltaTime;
