@@ -21,6 +21,9 @@ public class QuadTree {
     sat = s;
     holdObjects = new ArrayList<GameObject>();
     children = new QuadTree[0];
+
+    APPLET.println(APPLET);
+    APPLET.println(APPLET.width);
     room = new Boundary(new Vector(0,0), new Vector(APPLET.width, APPLET.height));
   }
 

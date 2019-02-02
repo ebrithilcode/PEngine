@@ -9,7 +9,7 @@ import java.util.HashMap;
 
 
 public class ServerConnection extends Thread {
-    HashMap<String, Data> clientData = new HashMap<String, Data>();
+    public HashMap<String, Data> clientData = new HashMap<String, Data>();
 
     private Server myServer;
     public int port = 8001;

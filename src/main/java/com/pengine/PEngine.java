@@ -15,13 +15,15 @@ public class PEngine {
   public static PApplet APPLET;
 
   public ArrayList<GameObject> objects = new ArrayList<>();
-  private SAT sat = new SAT();
-  private QuadTree qt = new QuadTree(sat);
+  private SAT sat;
+  private QuadTree qt;
   float maxMove = 0.1f;
   int steps = 1;
   public float floorFriction = 1.0f;
   public boolean useFloorFriction;
   public ArrayList<Vector> globalForces = new ArrayList<>();
+
+  public int backgroundColor;
 
   PhysicsThread pt = new PhysicsThread();
 
@@ -35,19 +37,25 @@ public class PEngine {
 
   public PEngine(PApplet applet) {
     APPLET = applet;
-
-    APPLET.ellipseMode(APPLET.RADIUS);
-    APPLET.imageMode(APPLET.CENTER);
-    APPLET.rectMode(APPLET.CENTER);
-    qt.room = new Boundary(new Vector(0,0), new Vector(APPLET.width, APPLET.height));
-    qt.room.infinite = true;
   }
 
   void setup() {
+    APPLET.ellipseMode(APPLET.RADIUS);
+    APPLET.imageMode(APPLET.CENTER);
+    APPLET.rectMode(APPLET.CENTER);
+    sat = new SAT();
+    qt = new QuadTree(sat);
+    qt.room = new Boundary(new Vector(0,0), new Vector(APPLET.width, APPLET.height));
+    qt.room.infinite = true;
+    backgroundColor = APPLET.color(255);
+
+    System.out.println("Got a new QuadTree: "+qt);
     pt.start();
+
   }
 
   void draw() {
+    APPLET.background(backgroundColor);
     for (int i=0;i<objects.size();i++) {
       objects.get(i).render();
     }
@@ -59,6 +67,7 @@ public class PEngine {
     }
     return max;
   }
+
   public void addObject(GameObject g) {
     boolean inserted = false;
     for (int i=0;i<objects.size();i++) {
@@ -70,6 +79,8 @@ public class PEngine {
     }
     if (!inserted) objects.add(g);
     g.setup();
+    System.out.println("GameObejct: "+g);
+    System.out.println("QuadTree: "+qt);
     qt.sortIn(g);
   }
 
@@ -126,8 +137,20 @@ public class PEngine {
     server = new ServerConnection(this);
     server.start();
   }
+  public void startServer(int port) {
+    server = new ServerConnection(this);
+    server.port = port;
+    server.start();
+  }
   public void startClient() {
     client = new ClientConnection(this);
+    client.start();
+  }
+
+  public void startClient(String ip, int port) {
+    client = new ClientConnection(this);
+    client.ip = ip;
+    client.port = port;
     client.start();
   }
   public void stopServer() {

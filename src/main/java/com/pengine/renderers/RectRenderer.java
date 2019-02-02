@@ -27,6 +27,7 @@ public class RectRenderer extends AbstractRenderer {
     APPLET.fill(c);
     APPLET.beginShape();
     for (Vector p: globalPoints) {
+      if (p!=null)
       APPLET.vertex(p.x, p.y);
     }
     APPLET.endShape(APPLET.CLOSE);
