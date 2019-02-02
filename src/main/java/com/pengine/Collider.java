@@ -5,7 +5,7 @@ import java.util.List;
 
 abstract class Collider extends Component {
 
-    boolean isTrigger = true;
+    public boolean isTrigger = true;
     Vector[] globalPoints;
     Vector lastPos;
 

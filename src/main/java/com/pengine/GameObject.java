@@ -10,26 +10,29 @@ public class GameObject implements Updatable {
   List<Component> components;
   public Vector pos;
   public float rot;
-  float mass;
+  public float mass;
   boolean dead;
   float deltaTime;
-  boolean noGravity;
+  public boolean noGravity;
   float maxRadius;
   Boundary bounds;
-  float friction;
+  public float friction;
   //Bewegungen
   Vector vel;
   //Kreisofrequenz
   float omega;
   boolean lockRotation;
-  float collisionEfficency;
+  public float collisionEfficency;
 
   public int renderingPriority;
 
-  List<Collider> collisionsDuringFrame;
-  List<Collider> collisionsPreviousFrame;
+  public List<Collider> collisionsDuringFrame;
+  public List<Collider> collisionsPreviousFrame;
 
-  GameObject() {
+  //Networking relevant
+  public int objectID;
+
+  public GameObject() {
     components = new ArrayList<>();
     pos = new Vector(0,0);
     mass = 1;

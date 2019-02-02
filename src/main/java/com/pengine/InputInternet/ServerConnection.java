@@ -1,58 +1,62 @@
 package com.pengine.InputInternet;
 
 import static com.pengine.PEngine.APPLET;
+import com.pengine.PEngine;
+import com.pengine.GameObject;
 import processing.net.Server;
 import processing.net.Client;
+import java.util.HashMap;
 
-class ServerConnection extends Thread {
-    Server myServer;
-    int port = 8001;
 
-    boolean newInput;
-    Data lastInput;
+public class ServerConnection extends Thread {
+    HashMap<String, Data> clientData = new HashMap<String, Data>();
 
-    Data toSend;
-    ServerConnection() {    }
+    private Server myServer;
+    public int port = 8001;
+    private boolean alive;
 
-    public void run() {
-        while (true) {
-            if (toSend!=null) {
-                lastInput = send();
-            } else APPLET.println("Not sending a thing");
-        }
+    PEngine engine;
+
+    private Data toSend;
+    public ServerConnection(PEngine e) {
+        alive = true;
+        engine = e;
     }
 
-    Data send() {
+    public void run() {
+        while (alive) {
+            buildData();
+            if (toSend!=null) {
+                send();
+            } else APPLET.delay(1);
+        }
+    }
+    public void end() {
+        alive = false;
+    }
+    private void send() {
         String sending = "";
         if (toSend instanceof TransformList) sending+= (char) 0;
-        if (toSend instanceof Keyset) sending += (char) 1;
+        if (toSend instanceof Input) sending += (char) 1;
         sending += toSend.toString();
         myServer.write( charToByte( sending.toCharArray() ));
 
-        Client mc;
-        int startTime = APPLET.millis();
-        do {
-            mc = myServer.available();
-        } while (mc==null && APPLET.millis()-startTime<1000);
-        if (mc!=null) {
+        Client mc = myServer.available();
+        while (mc!=null) {
             byte[] received = mc.readBytesUntil('\r');
+            Data input = null;
             switch(received[0]) {
                 case 0:
-                    newInput = true;
-                    return new TransformList(received);
+                    input = new TransformList(received);
                 case 1:
-                    newInput = true;
-                    return new Keyset(received);
+                    input = new Input(received);
             }
+            clientData.put(mc.ip(), input);
+            mc = myServer.available();
         }
-        return null;
     }
     void startServer() {
         myServer = new Server(APPLET, port);
-    }
-    Data getMyData() {
-        newInput = false;
-        return lastInput;
     }
     byte[] charToByte(char[] ch) {
         byte[] ret = new byte[ch.length];
@@ -60,5 +64,18 @@ class ServerConnection extends Thread {
             ret[i] = (byte) ch[i];
         }
         return ret;
+    }
+
+
+    void buildData() {
+        TransformList tl = new TransformList();
+        for (GameObject g: engine.objects) {
+            int classId = engine.classToId.get((g.getClass()));
+            int objectId = g.objectID;
+            com.pengine.Vector pos = g.pos;
+            float rot = g.rot;
+            tl.positions.add(new Transform(classId, objectId, pos, rot));
+        }
+        toSend = tl;
     }
 }

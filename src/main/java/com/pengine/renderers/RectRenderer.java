@@ -10,9 +10,9 @@ public class RectRenderer extends AbstractRenderer {
 
   Vector[] localPoints;
   Vector[] globalPoints;
-  /*color*/int c;
+  /*color*/public int c;
 
-  RectRenderer(GameObject g) {
+  public RectRenderer(GameObject g) {
     super(g);
     c = APPLET.color(0,0,255);
   }
@@ -39,6 +39,10 @@ public class RectRenderer extends AbstractRenderer {
       help = rotateVector(help, parent.pos, parent.rot);
       globalPoints[i] = help;
     }
+  }
+
+  public void setLocalPoints(Vector[] p) {
+    localPoints = p;
   }
 
 }

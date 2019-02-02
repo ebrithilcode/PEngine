@@ -10,9 +10,9 @@ public class CircleRenderer extends AbstractRenderer {
 
   Vector off;
   float radius;
-  /*color*/int c;
+  /*color*/public int c;
 
-  CircleRenderer(GameObject g) {
+  public CircleRenderer(GameObject g) {
     super(g);
     off = new Vector(0, 0);
     radius = 10;

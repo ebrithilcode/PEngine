@@ -4,12 +4,17 @@ import processing.core.PApplet;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.HashMap;
+
+import com.pengine.InputInternet.ClientConnection;
+import com.pengine.InputInternet.ServerConnection;
+import com.pengine.InputInternet.Input;
 
 public class PEngine {
 
   public static PApplet APPLET;
 
-  private ArrayList<GameObject> objects = new ArrayList<>();
+  public ArrayList<GameObject> objects = new ArrayList<>();
   private SAT sat = new SAT();
   private QuadTree qt = new QuadTree(sat);
   float maxMove = 0.1f;
@@ -19,6 +24,14 @@ public class PEngine {
   public ArrayList<Vector> globalForces = new ArrayList<>();
 
   PhysicsThread pt = new PhysicsThread();
+
+  public Input userInput;
+
+  //Networking relevant
+  public HashMap<Class<GameObject>, Integer> classToId;
+  public HashMap<Integer, Class<GameObject>> idToClass;
+  ClientConnection client;
+  ServerConnection server;
 
   public PEngine(PApplet applet) {
     APPLET = applet;
@@ -30,7 +43,7 @@ public class PEngine {
     qt.room.infinite = true;
   }
 
-  void start() {
+  void setup() {
     pt.start();
   }
 
@@ -46,7 +59,7 @@ public class PEngine {
     }
     return max;
   }
-  void addObject(GameObject g) {
+  public void addObject(GameObject g) {
     boolean inserted = false;
     for (int i=0;i<objects.size();i++) {
       if (objects.get(i).renderingPriority > g.renderingPriority) {
@@ -73,6 +86,9 @@ public class PEngine {
     }
   }
 
+  void mousePressed() {}
+  void mouseReleased() {}
+
   Collider noCollision(GameObject g) {
     List<Collider> possible = g.getAllComponentsOfType(Collider.class);
     Collider c1 = null;
@@ -95,6 +111,35 @@ public class PEngine {
     }
     return null;
   }
+
+  //Networking relevant
+
+  public void registerClass(Class<GameObject> cl) {
+    if (!classToId.containsKey(cl)) {
+      int val = classToId.size();
+      classToId.put(cl, val);
+      idToClass.put(val, cl);
+    }
+  }
+
+  public void startServer() {
+    server = new ServerConnection(this);
+    server.start();
+  }
+  public void startClient() {
+    client = new ClientConnection(this);
+    client.start();
+  }
+  public void stopServer() {
+    server.end();
+  }
+  public void stopClient() {
+    client.end();
+  }
+
+
+
+
 
   class PhysicsThread extends Thread {
 

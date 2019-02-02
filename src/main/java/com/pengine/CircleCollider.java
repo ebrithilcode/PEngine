@@ -14,7 +14,7 @@ public class CircleCollider extends Collider {
         globalPoints = new Vector[] {new Vector(0,0)};
     }
 
-    CircleCollider(GameObject g) {
+    public CircleCollider(GameObject g) {
         super(g);
     }
 

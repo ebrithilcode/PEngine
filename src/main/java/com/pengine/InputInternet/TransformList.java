@@ -7,7 +7,7 @@ import com.pengine.InputInternet.Transform;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TransformList extends Data {
+class TransformList extends Data {
     //Formatierung:
     //1.Byte Datentyp
     //2.Byte Tranform Anzahl
@@ -18,9 +18,10 @@ public class TransformList extends Data {
     //  4 bytes posy
     //  4 bytes rotation
 
-    List<Transform> positions = new ArrayList<Transform>();
+    ArrayList<Transform> positions = new ArrayList<Transform>();
     TransformList() {}
     TransformList(byte[] recData) {
+        recData = decodeBytes(recData);
         int num = recData[1];
         int iterator = 2;
         for (int i=0;i<num;i++) {
@@ -51,24 +52,26 @@ public class TransformList extends Data {
     @Override
     public String toString() {
         String str = "";
-        str += (char) nr((byte)positions.size());
+        str += (char) positions.size();
         for (Transform p: positions) {
-            str += (char) nr((byte)p.classID);
-            str += (char) nr((byte)p.objectID);
+            str += (char) p.classID;
+            str += (char) p.objectID;
             byte[] b1 = floatToByte(p.pos.x);
             byte[] b2 = floatToByte(p.pos.y);
             byte[] b3 = floatToByte(p.rot);
             for (int i=0;i<b1.length;i++) {
-                str+= (char) nr(b1[i]);
+                str+= (char) b1[i];
             }
             for (int i=0;i<b2.length;i++) {
-                str+= (char) nr(b2[i]);
+                str+= (char) b2[i];
             }
             for (int i=0;i<b3.length;i++) {
-                str+= (char) nr(b3[i]);
+                str+= (char) b3[i];
             }
         }
-        str += '\r';
-        return str;
+        String newString = encodeString(str);
+
+        newString += '\r';
+        return newString;
     }
 }

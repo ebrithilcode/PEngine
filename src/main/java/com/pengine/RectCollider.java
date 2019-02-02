@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RectCollider extends PolygonCollider {
-    RectCollider(GameObject g) {
+    public RectCollider(GameObject g) {
         super(g);
     }
 

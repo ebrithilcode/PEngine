@@ -13,7 +13,7 @@ public class Animation {
   Vector size;
   String name;
 
-  Animation(String filePath, int count, Vector csize) {
+  public Animation(String filePath, int count, Vector csize) {
     pics = new PImage[count];
     len = count;
     size = csize;

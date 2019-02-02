@@ -9,7 +9,7 @@ public class Connection extends Component {
     int distLock;
     int minDistLock;
 
-    Connection(GameObject g) {
+    public Connection(GameObject g) {
         super(g);
         pull = false;
         distLock = -1;
