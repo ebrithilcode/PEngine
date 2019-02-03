@@ -93,7 +93,9 @@ public class PEngine {
     g.setup();
     qt.sortIn(g);
   }
-
+  public void addData(byte[] bytes, int... iterator) {
+    data.add(idToClass.get(bytes[iterator[0]]).createData(bytes, iterator));
+  }
   //hier braucht es einen cleveren Weg sich in die Processing keyhooks einzuklinken
   void keyPressed() {
     userInput.manageKey(APPLET.key, true);

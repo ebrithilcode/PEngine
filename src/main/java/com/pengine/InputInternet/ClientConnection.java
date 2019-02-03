@@ -84,11 +84,21 @@ public class ClientConnection extends Thread {
       bytes = Data.decodeBytes(bytes);
       int[] iterator = new int[] {0};
       while (iterator < bytes.length) {
-
+        Data d = dataAlreadyExists(bytes[iterator[0]+1]);
+        if (d==null) {
+          engine.addData(bytes, iterator);
+        } else {
+          d.updateData(bytes, iterator);
+        }
       }
     }
 
-    Data dataAlreadyExits()
+    Data dataAlreadyExits(int id) {
+      for (Data d: engine.data) {
+        if (d.objectID == id) return d;
+      }
+      return null;
+    }
 
 
 }
