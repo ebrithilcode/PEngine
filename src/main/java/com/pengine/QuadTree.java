@@ -82,14 +82,16 @@ public class QuadTree {
     }
 
 
-    for (GameObject g: holdObjects) {
+    for (int i = holdObjects.size()-1;i>=0;i--) {
+      GameObject g = holdObjects.get(i);
       g.movement();
     }
 
     sat.manageCollisions(holdObjects, toCheck);
     sat.solve();
 
-    for (GameObject g: holdObjects) {
+    for (int i = holdObjects.size()-1;i>=0;i--) {
+      GameObject g = holdObjects.get(i);
       g.lateCollisionSetup();
     }
   }

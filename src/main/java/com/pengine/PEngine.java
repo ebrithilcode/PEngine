@@ -25,13 +25,13 @@ public class PEngine {
 
   public int backgroundColor;
 
-  PhysicsThread pt = new PhysicsThread();
+  public PhysicsThread pt = new PhysicsThread();
 
   public Input userInput;
 
   //Networking relevant
-  public HashMap<Class<GameObject>, Integer> classToId;
-  public HashMap<Integer, Class<GameObject>> idToClass;
+  public HashMap<Class<? extends GameObject>, Integer> classToId;
+  public HashMap<Integer, Class<? extends GameObject>> idToClass;
   ClientConnection client;
   ServerConnection server;
 
@@ -40,6 +40,9 @@ public class PEngine {
   }
 
   void setup() {
+    classToId = new HashMap<>();
+    idToClass = new HashMap<>();
+
     APPLET.ellipseMode(APPLET.RADIUS);
     APPLET.imageMode(APPLET.CENTER);
     APPLET.rectMode(APPLET.CENTER);
@@ -125,7 +128,7 @@ public class PEngine {
 
   //Networking relevant
 
-  public void registerClass(Class<GameObject> cl) {
+  public <T extends GameObject> void registerClass(Class<T> cl) {
     if (!classToId.containsKey(cl)) {
       int val = classToId.size();
       classToId.put(cl, val);
@@ -161,19 +164,25 @@ public class PEngine {
   }
 
 
-
+  public float  getPhysicsFrameRate() {
+    return 1 / pt.deltaTime;
+  }
+  public float getPhysicsDelta() {
+    return pt.deltaTime;
+  }
 
 
   class PhysicsThread extends Thread {
 
     int frameStart;
-    float deltaTime = 0;
+    public float deltaTime;
 
     boolean bruteForce = false;
     public void run() {
       while (true) {
         frameStart = APPLET.millis();
         managePhysics();
+        APPLET.delay(APPLET.max(0, 17-(APPLET.millis()-frameStart)));
         deltaTime = (APPLET.millis()-frameStart) / 1000f;
         frameStart = APPLET.millis();
       }
@@ -185,6 +194,7 @@ public class PEngine {
           objects.remove(i);
           i--;
         }
+        objects.get(i).deltaTime = deltaTime;
       }
 
       //Hopefully soon quadtree collisionManagement in logn

@@ -9,7 +9,7 @@ import static com.pengine.PEngine.APPLET;
 public class RectRenderer extends AbstractRenderer {
 
   Vector[] localPoints;
-  Vector[] globalPoints;
+  Vector[] globalPoints = new Vector[0];
   /*color*/public int c;
 
   public RectRenderer(GameObject g) {

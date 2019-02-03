@@ -8,8 +8,8 @@ import static com.pengine.PEngine.APPLET;
 
 public class CircleRenderer extends AbstractRenderer {
 
-  Vector off;
-  float radius;
+  private Vector off;
+  private float radius;
   /*color*/public int c;
 
   public CircleRenderer(GameObject g) {
@@ -23,5 +23,19 @@ public class CircleRenderer extends AbstractRenderer {
     APPLET.fill(c);
     Vector position = off.copy().add(parent.pos);
     APPLET.ellipse(position.x, position.y, radius, radius);
+  }
+
+  public void setRadius(float v) {
+    radius = v;
+  }
+
+  public void setOff(Vector v) {
+    off = v;
+  }
+  public float getRadius() {
+    return radius;
+  }
+  public Vector getOff() {
+    return off;
   }
 }

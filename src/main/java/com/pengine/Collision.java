@@ -48,6 +48,13 @@ public class Collision {
     // holder = g2.rot%HALF_PI;
     // if (abs(holder)<0.01) g2.rot-= holder;
     // else if (HALF_PI-holder<0.1) g2.rot+=holder;
+    APPLET.strokeWeight(100);
+    APPLET.stroke(APPLET.color(255,0,0));
+    APPLET.point(collisionPoint.x, collisionPoint.y);
+    APPLET.println("Pointing at: "+collisionPoint);
+    APPLET.stroke(0);
+    APPLET.strokeWeight(1);
+
 
     solvePenetration();
 
@@ -61,6 +68,9 @@ public class Collision {
     float j = calculateJ();
     norm.mult(j);
     Vector tangMovement = tang.cmult(g2.vel.csub(g1.vel).dot(tang) * (g1.friction+g2.friction)/2f);
+    System.out.println("Old velocities");
+    System.out.println(g1.vel);
+    System.out.println(g2.vel);
     if (m1>0) {
       g1.addVelocity(norm.cdiv(m1));
       g1.addAngularVelocity(ra.cross(norm).z * minertia1Inv);
@@ -72,6 +82,9 @@ public class Collision {
       g2.addAngularVelocity(-1*rb.cross(norm).z * minertia2Inv);
       g2.addVelocity(tangMovement.cmult(-m2/(m1+m2)));
     }
+    System.out.println("New velocities");
+    System.out.println(g1.vel);
+    System.out.println(g2.vel);
   }
 
   protected void solvePenetration() {
@@ -83,7 +96,7 @@ public class Collision {
     notm1 = c1.moved ? Float.MAX_VALUE-1:m1;
     if (m2>0)
     notm2 = c2.moved ? Float.MAX_VALUE-1:m2;
-    out2.setMag(out2.mag());
+    out2.setMag(out2.mag()+5);
     Vector g1ToMove = new Vector(0,0);
     Vector g2ToMove = new Vector(0,0);
     if (notm1==-1) {
@@ -102,7 +115,7 @@ public class Collision {
       g1ToMove = out2.cmult(-notm2/(notm1+notm2));
       g2ToMove = out2.cmult(notm1/(notm1+notm2));
     }
-    Vector g1OutDir = g1.vel.copy().normalize();
+    /*Vector g1OutDir = g1.vel.copy().normalize();
     Vector g2OutDir = g2.vel.copy().normalize();
     if ((notm1>0) && g1OutDir.mag()==0) {
       g1OutDir = out2.cmult(-1).normalize();
@@ -115,10 +128,10 @@ public class Collision {
 
     if (Float.isNaN(g1Amount)) g1Amount = 0;
     if (Float.isNaN(g2Amount)) g2Amount = 0;
-    // if (g1Amount==0&&g2Amount==0) {
-    //   g1Amount=0.5;
-    //   g2Amount = 0.5;
-    // }
+    if (g1Amount==0&&g2Amount==0) {
+      g1Amount=0.5f;
+      g2Amount = 0.5f;
+    }
 
     if (g1Amount!=0) {
       Vector out = g1OutDir.cmult(out2.mag() * (g1Amount) / (APPLET.abs(g1Amount)+APPLET.abs(g2Amount)));
@@ -127,7 +140,9 @@ public class Collision {
     if (g2Amount!=0) {
       Vector out = g2OutDir.cmult(out2.mag()*(g2Amount) / (APPLET.abs(g1Amount)+APPLET.abs(g2Amount)));
       g2.shift(out);
-    } //else g2.shift(g2ToMove);
+    } //else g2.shift(g2ToMove);*/
+    g1.shift(g1ToMove);
+    g2.shift(g2ToMove);
   }
 
   protected float calculateJ() {
@@ -151,6 +166,7 @@ public class Collision {
     minertia2Inv = m2<0?0:1/(m2*APPLET.pow(rb.mag(),2));
     sum += ra.cross(norm).dot(ra.cross(norm)) * minertia1Inv;
     sum += rb.cross(norm).dot(rb.cross(norm)) * minertia2Inv;
+    System.out.println("Correct: "+((sum==1/m1)||(sum==1/m2)));
     return sum;
   }
 

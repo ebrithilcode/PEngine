@@ -91,7 +91,7 @@ public class GameObject implements Updatable {
     }
   }
 
-  void addVelocity(Vector v) {
+  public void addVelocity(Vector v) {
     vel.add(v);
     for (Component c: components) {
       if (c instanceof Connection) {
@@ -99,10 +99,10 @@ public class GameObject implements Updatable {
       }
     }
   }
-  void addVelocityDiscret(Vector v) {
+  public void addVelocityDiscret(Vector v) {
     vel.add(v);
   }
-  void addAngularVelocity(float f) {
+  public void addAngularVelocity(float f) {
     if (!lockRotation) {
       omega += f;
       for (Component c: components) {
@@ -113,7 +113,7 @@ public class GameObject implements Updatable {
     }
   }
 
-  void shift(Vector v) {
+  public void shift(Vector v) {
     pos.add(v);
     // for (Component c: components) {
     //   if (c instanceof Connection) {
@@ -121,7 +121,7 @@ public class GameObject implements Updatable {
     //   }
     // }
   }
-  Vector getMassCenter() {
+  public Vector getMassCenter() {
     for (Component c: components) {
       if (c instanceof Connection) {
         return ((Connection)c).getMassCenter();
@@ -129,7 +129,7 @@ public class GameObject implements Updatable {
     }
     return pos.copy();
   }
-  float getMass() {
+  public float getMass() {
     // for (Component c: components) {
     //   if (c instanceof Connection) {
     //     return ((Connection)c).getMass();
@@ -137,7 +137,7 @@ public class GameObject implements Updatable {
     // }
     return mass;
   }
-  void render() {
+  public void render() {
     for (Component c: components) {
       if (c instanceof AbstractRenderer) {
         ((AbstractRenderer)c).show();

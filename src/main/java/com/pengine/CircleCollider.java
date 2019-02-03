@@ -47,4 +47,14 @@ public class CircleCollider extends Collider {
         radius = v;
         parent.maxRadius = v;
     }
+
+    public void setOff(Vector v) {
+        off = v;
+    }
+    public float getRadius() {
+        return radius;
+    }
+    public Vector getOff() {
+        return off;
+    }
 }
