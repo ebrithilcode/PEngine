@@ -67,7 +67,7 @@ public class SAT {
     }
 
     //Calculate collisionPoint
-    if (bestORet.normalIndex < c1Normals.size()) {
+    if (xor(bestORet.normalIndex < c1Normals.size(), switched)) {
       //c2 ihm sein Punkt verschieben
       switch (bestORet.circle) {
         case 0:
@@ -86,12 +86,16 @@ public class SAT {
         collisionPoint = bestORet.p1.sub(best);
         break;
         case 2:
+          System.out.println("I cant believe this is the case");
         break;
       }
     }
 
     if (switched) best.mult(-1);
     return new Vector[] {best.mult(bVal), collisionPoint};
+  }
+  private boolean xor(boolean b1, boolean b2) {
+    return (b1||b2)&& !(b1&&b2);
   }
 
 

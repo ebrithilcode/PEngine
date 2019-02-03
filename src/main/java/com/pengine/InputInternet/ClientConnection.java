@@ -64,7 +64,7 @@ public class ClientConnection extends Thread {
         newInput = false;
         return lastInput;
     }
-    void connect() {
+    public void connect() {
         PApplet.println("Connecting to: "+ip);
         myClient = new Client(APPLET, ip, port);
     }

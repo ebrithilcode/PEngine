@@ -48,12 +48,6 @@ public class Collision {
     // holder = g2.rot%HALF_PI;
     // if (abs(holder)<0.01) g2.rot-= holder;
     // else if (HALF_PI-holder<0.1) g2.rot+=holder;
-    APPLET.strokeWeight(100);
-    APPLET.stroke(APPLET.color(255,0,0));
-    APPLET.point(collisionPoint.x, collisionPoint.y);
-    APPLET.println("Pointing at: "+collisionPoint);
-    APPLET.stroke(0);
-    APPLET.strokeWeight(1);
 
 
     solvePenetration();
@@ -68,9 +62,9 @@ public class Collision {
     float j = calculateJ();
     norm.mult(j);
     Vector tangMovement = tang.cmult(g2.vel.csub(g1.vel).dot(tang) * (g1.friction+g2.friction)/2f);
-    System.out.println("Old velocities");
+    /*System.out.println("Old velocities");
     System.out.println(g1.vel);
-    System.out.println(g2.vel);
+    System.out.println(g2.vel);*/
     if (m1>0) {
       g1.addVelocity(norm.cdiv(m1));
       g1.addAngularVelocity(ra.cross(norm).z * minertia1Inv);
@@ -82,9 +76,9 @@ public class Collision {
       g2.addAngularVelocity(-1*rb.cross(norm).z * minertia2Inv);
       g2.addVelocity(tangMovement.cmult(-m2/(m1+m2)));
     }
-    System.out.println("New velocities");
+    /*System.out.println("New velocities");
     System.out.println(g1.vel);
-    System.out.println(g2.vel);
+    System.out.println(g2.vel);*/
   }
 
   protected void solvePenetration() {
@@ -166,7 +160,6 @@ public class Collision {
     minertia2Inv = m2<0?0:1/(m2*APPLET.pow(rb.mag(),2));
     sum += ra.cross(norm).dot(ra.cross(norm)) * minertia1Inv;
     sum += rb.cross(norm).dot(rb.cross(norm)) * minertia2Inv;
-    System.out.println("Correct: "+((sum==1/m1)||(sum==1/m2)));
     return sum;
   }
 

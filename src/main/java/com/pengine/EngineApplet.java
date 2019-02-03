@@ -8,6 +8,7 @@ import java.util.ArrayList;
 public class EngineApplet extends PApplet {
     public static PEngine engine;
     public static List<MethodListener> callback = new ArrayList<MethodListener>();
+    public static Vector size;
 
     //For different screen sizes;
     private float screenScale;
@@ -22,8 +23,14 @@ public class EngineApplet extends PApplet {
     public EngineApplet() {
         engine = new PEngine(this);
     }
+
+
     public void settings() {
-        fullScreen();
+        if (size.mag()==0) {
+            fullScreen();
+        } else {
+            size((int)size.x, (int)size.y);
+        }
         System.out.println("Settings");
     }
     public void setup() {
@@ -37,7 +44,7 @@ public class EngineApplet extends PApplet {
 
     public void draw() {
         pushMatrix();
-        translate(yOff, xOff);
+        translate(xOff, yOff);
         scale(screenScale, screenScale);
 
         engine.draw();
@@ -55,10 +62,12 @@ public class EngineApplet extends PApplet {
 
     public void keyPressed() {
         engine.keyPressed();
+        for (MethodListener ml: callback) ml.keyPressed();
     }
 
     public void keyReleased() {
         engine.keyReleased();
+        for (MethodListener ml: callback) ml.keyReleased();
     }
 
     public void mousePressed() {
@@ -78,5 +87,6 @@ public class EngineApplet extends PApplet {
             yOff = 0;
             screenScale = height / 1080f;
         }
+        System.out.println("Setup screen: "+xOff+"/"+yOff+"/"+screenScale);
     }
 }

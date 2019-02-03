@@ -52,7 +52,6 @@ public class PEngine {
     qt.room.infinite = true;
     backgroundColor = APPLET.color(255);
 
-    System.out.println("Got a new QuadTree: "+qt);
     pt.start();
 
   }
@@ -82,8 +81,6 @@ public class PEngine {
     }
     if (!inserted) objects.add(g);
     g.setup();
-    System.out.println("GameObejct: "+g);
-    System.out.println("QuadTree: "+qt);
     qt.sortIn(g);
   }
 
@@ -154,6 +151,7 @@ public class PEngine {
     client = new ClientConnection(this);
     client.ip = ip;
     client.port = port;
+    client.connect();
     client.start();
   }
   public void stopServer() {

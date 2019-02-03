@@ -157,7 +157,6 @@ public class GameObject implements Updatable {
   public void onCollisionEnter(Collider other, Collider mine) {}
 
   public void onCollisionLeave(Collider other, Collider mine) {
-    //println("This object can leave");
   }
 
   public void handleKey(boolean pressed) {}
