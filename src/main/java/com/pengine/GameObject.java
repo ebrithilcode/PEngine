@@ -5,7 +5,7 @@ import java.util.List;
 
 import static com.pengine.PEngine.APPLET;
 
-public class GameObject implements Updatable {
+public class GameObject extends Data implements Updatable {
 
   List<Component> components;
   public Vector pos;
@@ -30,7 +30,7 @@ public class GameObject implements Updatable {
   public List<Collider> collisionsPreviousFrame;
 
   //Networking relevant
-  public int objectID;
+  public int objectID = -1;
 
   public GameObject() {
     components = new ArrayList<>();
@@ -219,5 +219,52 @@ public class GameObject implements Updatable {
     float up = pos.y + (vel.y<0 ? vel.y : 0) - maxRadius;
     float down = pos.y + (vel.y>0 ? vel.y : 0) + maxRadius;
     return new Boundary(new Vector(left,up), new Vector(right-left, down-up));
+  }
+
+
+  //Data type methods:
+
+  @Override
+  public static GameObject createData(byte[] b, int... index) {
+    GameObject g = new GameObject();
+    //Skip class ID;
+    index[0]++;
+    g.objectID = index[0]++;
+    g.pos = Vector.createData(b, index);
+    int comNum = b[index++];
+    for (int i=0;i<comNum;i++) {
+      g.components.add((Component) PEngine.createData(b, index));
+      g.components.get(i).parent = g;
+    }
+
+  }
+
+
+  @Override
+  public String toString() {
+    String ret = "";
+    ret += classID;
+    ret += objectID;
+    ret += pos.toString();
+    ret += (char) components.size();
+    for (int i=0;i<components.size();i++) {
+      ret += components.get(i).toString();
+    }
+  }
+
+  public void updateData(byte[] b, int... index) {
+    //Skip class and object id
+    index[0] += 2;
+    if (b[index[0]+1] == pos.objectID)
+    pos.updateData(b, index);
+    else
+    pos = Vector.createData(b, index);
+
+    for (int i=0;i<b[index[0]++];i++) {
+      if (b[index[0]+1] == components.get(i).objectID)
+        components.get(i).updateData(b, index);
+      else
+        components.add(i, Component.createData(b, index));
+    }
   }
 }

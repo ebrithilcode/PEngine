@@ -12,6 +12,7 @@ public class CircleRenderer extends AbstractRenderer {
   private float radius;
   /*color*/public int c;
 
+  public CircleRenderer() {}
   public CircleRenderer(GameObject g) {
     super(g);
     off = new Vector(0, 0);
@@ -37,5 +38,34 @@ public class CircleRenderer extends AbstractRenderer {
   }
   public Vector getOff() {
     return off;
+  }
+
+
+  @Override
+  public String toString() {
+    String ret = "";
+    ret += classID;
+    ret += objectID;
+    ret = concateByteArray(ret, intToBytes(c));
+    ret += (char) radius;
+
+    return ret;
+  }
+  @Override
+  public static CircleRenderer createData(byte[] b, int... index) {
+    index[0] ++;
+    CircleRenderer rr = new CircleRenderer();
+    rr.objectID = index[0]++;
+    rr.c = bytesToInt(subarray(b, index, 4));
+    rr.radius = b[index[0]++];
+    return rr;
+  }
+  @Override
+  public void updateData(byte[] b, int... index) {
+    //Skip class and object id;
+    index[0] += 2;
+    c = bytesToInt(subarray(b, index, 4));
+    radius = b[index[0]++];
+
   }
 }

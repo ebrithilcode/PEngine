@@ -2,7 +2,7 @@ package com.pengine;
 
 import static com.pengine.PEngine.APPLET;
 
-public class Vector {
+public class Vector extends Data{
 
   public float x;
   public float y;
@@ -123,7 +123,31 @@ public class Vector {
 
   @Override
   public String toString() {
-    return "["+x+", "+y+"]";
+    String ret = "";
+    ret += classID;
+    ret += objectID;
+    ret = concateByteArray(ret, floatToByte(x));
+    ret = concateByteArray(ret, floatToByte(y));
+    return ret;
+  }
+
+  @Override
+  public static Vector createData(byte[] b, int... index) {
+    Vector v = new Vector();
+    s//Skip class ID
+    index[0]++;
+    v.objectID = b[index[0]++];
+    v.x = byteToFloat(subarray(b, index, 4));
+    v.y = byteToFloat(subarray(b, index, 4));
+    return v;
+  }
+
+  @Override
+  public void updateData(byte[] b, int... index) {
+    //Skip class and object id
+    index[0] += 2;
+    x = byteToFloat(subarray(b, index[0], 4));
+    y = byteToFloat(subarray(b, index, 4));
   }
 
 }

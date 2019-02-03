@@ -4,8 +4,8 @@ import static com.pengine.PEngine.APPLET;
 
 public class Input extends Data {
 
-  private HashMap<Integer, Boolean> setKeys = new HashMap<Integer, Boolean>();
-  private HashMap<Integer, Boolean> mouseButtons = new HashMap<>();
+  private HashMap<Character, Boolean> setKeys = new HashMap<Character, Boolean>();
+  private HashMap<Character, Boolean> mouseButtons = new HashMap<>();
   private int mouseWheel;
   private int mouseX;
   private int mouseY;
@@ -54,10 +54,11 @@ public class Input extends Data {
 
   }
   void manageKey(int k, boolean down) {
-      setKeys.put(k, down);
+    if (down && !isPressed(k))
+      setKeys.put( (char)k, down);
   }
   void manageMouseButton(int button, boolean down) {
-    mouseButtons.put(button, down);
+    mouseButtons.put( (char) button, down);
   }
   void manageMouseWheel(int ticks) {
     mouseWheel = ticks;
@@ -94,12 +95,7 @@ public class Input extends Data {
     return sb.toString();
   }
 
-  byte[] intToBytes(int i) {
-    return java.nio.ByteBuffer.allocate(4).putInt(i).array();
-  }
-  int bytesToInt(byte[] b) {
-    return java.nio.ByteBuffer.wrap(b).getInt();
-  }
+
   String bytesToString(byte[] b) {
     String r = "";
     for (byte c: b) {

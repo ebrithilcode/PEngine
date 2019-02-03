@@ -2,7 +2,7 @@ package com.pengine;
 
 import static com.pengine.PEngine.APPLET;
 
-public abstract class Component implements Updatable {
+public abstract class Component extends Data implements Updatable {
 
   public GameObject parent;
   public String name = "";
@@ -37,10 +37,6 @@ public abstract class Component implements Updatable {
     return new Vector[] {new Vector(-wid/2f, -hei/2f), new Vector(wid/2f, -hei/2f), new Vector(wid/2f, hei/2f), new Vector(-wid/2f, hei/2f)};
   }
 
+  
+
 }
-
-
-
-
-
-

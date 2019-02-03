@@ -17,5 +17,6 @@ public class Transform {
         objectID = oid;
         pos = p;
         rot = r;
+        byte[] additionalData;
     }
 }

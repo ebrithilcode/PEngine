@@ -40,9 +40,7 @@ public class ClientConnection extends Thread {
     Data listen() {
         if (myClient.available()>0) {
             byte[] received = myClient.readBytesUntil('\r');
-            PApplet.println("listening");
             if (inputBuffer!=null) {
-                PApplet.println("Not null");
                 String sending = "";
                 if (inputBuffer instanceof TransformList) sending+= (char) 0;
                 if (inputBuffer instanceof Input) sending += (char) 1;
@@ -73,41 +71,24 @@ public class ClientConnection extends Thread {
         Data inputBuffer = engine.userInput;
     }
 
-    void buildObjectList() {
-        if (lastInput!=null) {
-            ArrayList<Transform> newPositions = ((TransformList)lastInput).positions;
-            killOld(newPositions);
-            for (Transform t: newPositions) {
-                boolean found = false;
-                for (GameObject g: engine.objects) {
-                    if (t.objectID == g.objectID) {
-                        found = true;
-                        g.rot = t.rot;
-                        g.pos = t.pos;
-                    }
-                    if (!found) {
-                        try {
-                            GameObject toAdd = engine.idToClass.get(t.classID).newInstance();
-                            toAdd.pos = t.pos;
-                            toAdd.rot = t.rot;
-                            engine.objects.add(toAdd);
-                        } catch (Exception e) {}
-                    }
-                }
-            }
-        }
+    void buildData() {
+      String s = "";
+      for (Data d: engine.data) {
+        s += d.toString();
+      }
+      s = Data.encodeString(s);
+      s += '\r';
+
+    }
+    void useData(byte[] bytes) {
+      bytes = Data.decodeBytes(bytes);
+      int[] iterator = new int[] {0};
+      while (iterator < bytes.length) {
+
+      }
     }
 
-    void killOld(ArrayList<Transform> pos) {
-        for (int i=engine.objects.size()-1;i>=0;i--) {
-            GameObject g = engine.objects.get(i);
-            boolean found = false;
-            for (Transform t: pos) {
-                if (t.objectID == g.objectID) found = true;
-            }
-            if (!found) engine.objects.remove(i);
-        }
-    }
+    Data dataAlreadyExits()
 
 
 }

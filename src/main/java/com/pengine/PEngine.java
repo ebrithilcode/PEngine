@@ -14,7 +14,11 @@ public class PEngine {
 
   public static PApplet APPLET;
 
-  public ArrayList<GameObject> objects = new ArrayList<>();
+  public ArrayList<Data> otherData = new ArrayList<>();
+
+  protected List<GameObject> gameObjects = new ArrayList<>();
+  protected List<Data> otherEntities = new ArrayList<>();
+
   private SAT sat;
   private QuadTree qt;
   float maxMove = 0.1f;
@@ -30,10 +34,11 @@ public class PEngine {
   public Input userInput;
 
   //Networking relevant
-  public HashMap<Class<? extends GameObject>, Integer> classToId;
-  public HashMap<Integer, Class<? extends GameObject>> idToClass;
+  public HashMap<Class<? extends Data>, Integer> classToId;
+  public HashMap<Integer, Class<? extends Data>> idToClass;
   ClientConnection client;
   ServerConnection server;
+  private int uniqueObjId = 0;
 
   public PEngine(PApplet applet) {
     APPLET = applet;
@@ -52,6 +57,7 @@ public class PEngine {
     qt.room.infinite = true;
     backgroundColor = APPLET.color(255);
 
+    System.out.println("Got a new QuadTree: "+qt);
     pt.start();
 
   }
@@ -71,6 +77,10 @@ public class PEngine {
   }
 
   public void addObject(GameObject g) {
+    if (g.objectID >0) {
+      g.objectID = uniqueObjId;
+      uniqueObjId++;
+    }
     boolean inserted = false;
     for (int i=0;i<objects.size();i++) {
       if (objects.get(i).renderingPriority > g.renderingPriority) {
@@ -86,12 +96,14 @@ public class PEngine {
 
   //hier braucht es einen cleveren Weg sich in die Processing keyhooks einzuklinken
   void keyPressed() {
+    userInput.manageKey(APPLET.key, true);
     for (GameObject g: objects) {
       g.handleKey(true);
     }
   }
 
   void keyReleased() {
+    userInput.manageKey(APPLET.key, false);
     for (GameObject g: objects) {
       g.handleKey(false);
     }
@@ -130,7 +142,7 @@ public class PEngine {
       int val = classToId.size();
       classToId.put(cl, val);
       idToClass.put(val, cl);
-    }
+    } else System.out.println("Already contained");
   }
 
   public void startServer() {
@@ -140,10 +152,12 @@ public class PEngine {
   public void startServer(int port) {
     server = new ServerConnection(this);
     server.port = port;
+    server.startServer();
     server.start();
   }
   public void startClient() {
     client = new ClientConnection(this);
+    client.connect();
     client.start();
   }
 

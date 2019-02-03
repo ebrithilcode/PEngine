@@ -28,6 +28,8 @@ public class UserKeyHandler {
     }
 
     public void keyEvent(KeyEvent event) {
+            if (event.getAction() == KeyEvent.PRESS) engine.keyPressed();
+            if (event.getAction() == KeyEvent.RELEASE) engine.keyReleased();
             KeyMethodLink kml;
             if (event.getKey() == 0xffff) {
                 kml = keyToMethod.get(event.getKeyCode());
@@ -37,6 +39,7 @@ public class UserKeyHandler {
             }
             if(kml != null) {
                 if((event.getAction() == KeyEvent.PRESS && kml.press) || (event.getAction() == KeyEvent.RELEASE && !kml.press)) {
+
                     try {
                         kml.met.invoke(kml.obj);
                     }

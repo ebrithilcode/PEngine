@@ -55,7 +55,7 @@ public class ServerConnection extends Thread {
             mc = myServer.available();
         }
     }
-    void startServer() {
+    public void startServer() {
         myServer = new Server(APPLET, port);
     }
     byte[] charToByte(char[] ch) {
@@ -68,14 +68,10 @@ public class ServerConnection extends Thread {
 
 
     void buildData() {
-        TransformList tl = new TransformList();
-        for (GameObject g: engine.objects) {
-            int classId = engine.classToId.get((g.getClass()));
-            int objectId = g.objectID;
-            com.pengine.Vector pos = g.pos;
-            float rot = g.rot;
-            tl.positions.add(new Transform(classId, objectId, pos, rot));
-        }
-        toSend = tl;
+
     }
+    void useData() {
+
+    }
+    
 }
