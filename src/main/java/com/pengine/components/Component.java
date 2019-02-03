@@ -1,4 +1,8 @@
-package com.pengine;
+package com.pengine.components;
+
+import com.pengine.GameObject;
+import com.pengine.InputInternet.Data;
+import com.pengine.Updatable;
 
 import static com.pengine.PEngine.APPLET;
 

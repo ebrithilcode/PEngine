@@ -1,10 +1,9 @@
 package com.pengine.components;
 
-import processing.core.PApplet;
+import com.pengine.GameObject;
 import processing.event.KeyEvent;
 
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,20 +15,20 @@ public class Interaction extends Component {
 
     public Interaction(GameObject g) {
         super(g);
-        keyBindings = new Map<>();
+        keyBindings = new HashMap<>();
         //als library
         if (APPLET == null) {
-          System.out.err("Interaction Component must be instantiated after the main engine, this instance will be useless.");
+            System.err.println("Interaction Component must be instantiated after the main engine, this instance will be useless.");
         }
         else {
-          APPLET.registerMethod("keyEvent", this);
+            APPLET.registerMethod("keyEvent", this);
         }
     }
 
     public void addKeyListener(char key, String methodName, boolean press) {
         try {
             parent.getClass().getMethod(methodName);
-            keyToMethod.put(key, new KeyMethodLink(methodName, press));
+            keyBindings.put(key, new KeyBinding(methodName, press));
         }
         catch(NoSuchMethodException e) {
             System.err.println("Method that was tried to register \""+methodName+"\" does not exist...");
@@ -50,6 +49,10 @@ public class Interaction extends Component {
                     try {
                         parent.getClass().getMethod(keyBinding.methodName).invoke(parent);
                     }
+                    catch(NoSuchMethodException e) {
+                        System.err.println("This error should not possibly be able to happen. If you still got here: Congrats!");
+                        e.printStackTrace();
+                    }
                     catch(IllegalAccessException e) {
                         System.err.println("Can't access method \""+keyBinding.methodName+"\", try changing its access modifier.");
                     }
@@ -61,23 +64,28 @@ public class Interaction extends Component {
             }
     }
 
+    public boolean earlyUpdate() {
+        return false;
+    }
+
+    public boolean update() {
+        return false;
+    }
+
+    public boolean lateUpdate() {
+        return false;
+    }
+
     private class KeyBinding {
 
         private String methodName;
         private boolean onPress;
 
-        private KeyMethodLink(String methodName, boolean onPress) {
+        private KeyBinding(String methodName, boolean onPress) {
             this.methodName = methodName;
             this.onPress = onPress;
         }
 
     }
-
-}
-
-
-
-
-
 
 }

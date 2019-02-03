@@ -1,12 +1,15 @@
-package com.pengine;
+package com.pengine.components;
+
+import com.pengine.GameObject;
+import com.pengine.Vector;
 
 import java.util.ArrayList;
 import java.util.List;
 
-abstract class Collider extends Component {
+public abstract class Collider extends Component {
 
     public boolean isTrigger = true;
-    Vector[] globalPoints;
+    protected Vector[] globalPoints;
     Vector lastPos;
 
     List<Collider> isColliding;

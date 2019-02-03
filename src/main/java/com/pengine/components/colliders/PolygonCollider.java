@@ -1,4 +1,8 @@
-package com.pengine;
+package com.pengine.components.colliders;
+
+import com.pengine.GameObject;
+import com.pengine.Vector;
+import com.pengine.components.Collider;
 
 import java.util.ArrayList;
 import java.util.List;
