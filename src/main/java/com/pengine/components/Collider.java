@@ -12,9 +12,9 @@ public abstract class Collider extends Component {
     protected Vector[] globalPoints;
     Vector lastPos;
 
-    List<Collider> isColliding;
-    List<Collider> wasColliding;
-    List<Collider> blackList;
+    public List<Collider> isColliding;
+    public List<Collider> wasColliding;
+    public List<Collider> blackList;
 
     public Collider(GameObject g) {
         super(g);

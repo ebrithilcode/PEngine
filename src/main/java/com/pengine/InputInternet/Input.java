@@ -12,10 +12,10 @@ public class Input extends Data {
   private int mouseX;
   private int mouseY;
 
-  Input() {
+  public Input() {
 
   }
-  Input(byte[] data) {
+  public Input(byte[] data) {
     int iterator = 1;
 
     byte[] xBytes = new byte[4];
@@ -35,7 +35,7 @@ public class Input extends Data {
     int num = data[iterator];
     iterator++;
     for (int i=0;i<num;i++) {
-      int n = data[iterator];
+      char n = (char) data[iterator];
       iterator++;
       boolean res = data[iterator] == 1;
       iterator++;
@@ -45,7 +45,7 @@ public class Input extends Data {
     num = data[iterator];
     iterator++;
     for (int i=0;i<num;i++) {
-      int n = data[iterator];
+      char n = (char) data[iterator];
       iterator++;
       boolean res = data[iterator] == 1;
       iterator++;
@@ -55,23 +55,23 @@ public class Input extends Data {
     mouseWheel = data[iterator];
 
   }
-  void manageKey(int k, boolean down) {
+  public void manageKey(int k, boolean down) {
     if (down && !isPressed(k))
       setKeys.put( (char)k, down);
   }
-  void manageMouseButton(int button, boolean down) {
+  public void manageMouseButton(int button, boolean down) {
     mouseButtons.put( (char) button, down);
   }
-  void manageMouseWheel(int ticks) {
+  public void manageMouseWheel(int ticks) {
     mouseWheel = ticks;
   }
-  boolean isPressed(int k) {
+  public boolean isPressed(int k) {
     Boolean b = setKeys.get(k);
     //println("Is: "+(char) k+" pressed? "+b);
     return b!=null ? b: false;
   }
 
-  void update(int mX, int mY) {
+  public void update(int mX, int mY) {
     mouseX = mX;
     mouseY = mY;
   }
@@ -87,10 +87,10 @@ public class Input extends Data {
     r += '\r';
     return r;
   }
-  private String hmToString(HashMap<Integer, Boolean> hm) {
+  private String hmToString(HashMap<Character, Boolean> hm) {
     StringBuilder sb = new StringBuilder();
     sb.append((char)hm.size());
-    for (int k: hm.keySet()) {
+    for (char k: hm.keySet()) {
       sb.append((char)  k);
       sb.append((char) (hm.get(k) ? 1:0));
     }

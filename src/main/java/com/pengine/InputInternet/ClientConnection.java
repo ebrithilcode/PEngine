@@ -58,6 +58,9 @@ public class ClientConnection extends Thread {
         }
         return null;
     }
+    public String getMyIp() {
+        return myClient.ip();
+    }
     Data getMyData() {
         newInput = false;
         return lastInput;
@@ -72,32 +75,10 @@ public class ClientConnection extends Thread {
     }
 
     void buildData() {
-      String s = "";
-      for (Data d: engine.data) {
-        s += d.toString();
-      }
-      s = Data.encodeString(s);
-      s += '\r';
 
     }
-    void useData(byte[] bytes) {
-      bytes = Data.decodeBytes(bytes);
-      int[] iterator = new int[] {0};
-      while (iterator < bytes.length) {
-        Data d = dataAlreadyExists(bytes[iterator[0]+1]);
-        if (d==null) {
-          engine.addData(bytes, iterator);
-        } else {
-          d.updateData(bytes, iterator);
-        }
-      }
-    }
+    void useData() {
 
-    Data dataAlreadyExits(int id) {
-      for (Data d: engine.data) {
-        if (d.objectID == id) return d;
-      }
-      return null;
     }
 
 

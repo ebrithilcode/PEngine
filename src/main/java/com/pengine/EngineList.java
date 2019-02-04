@@ -1,15 +1,20 @@
+package com.pengine;
+
 import java.util.List;
 import java.util.ArrayList;
+import com.pengine.InputInternet.Input;
+import com.pengine.InputInternet.Data;
 
 public class EngineList {
     List<GameObject> objectList;
     List<Input> inputData;
-    List<Data> otherData;
+    List<Data> otherServerData;
+    List<Data> otherClientData;
 
-    EngineList() {
+    public EngineList() {
         objectList = new ArrayList<GameObject>();
         inputData = new ArrayList<Input>();
-        otherData = new ArrayList<Data>();
+        otherServerData = new ArrayList<Data>();
     }
 
     public List<GameObject> getObjects() {
@@ -19,6 +24,7 @@ public class EngineList {
         return inputData;
     }
     public void addObject(int pos, GameObject g) {
-        objectList.add(i, g);
+        objectList.add(pos, g);
     }
+
 }

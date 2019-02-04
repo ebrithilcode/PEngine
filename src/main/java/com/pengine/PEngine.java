@@ -9,14 +9,17 @@ import java.util.HashMap;
 import com.pengine.InputInternet.ClientConnection;
 import com.pengine.InputInternet.ServerConnection;
 import com.pengine.InputInternet.Input;
+import com.pengine.InputInternet.Data;
+import com.pengine.components.Collider;
+import com.pengine.components.Component;
+import com.pengine.components.colliders.*;
 
 public class PEngine {
 
   public static PApplet APPLET;
 
-  public ArrayList<Data> otherData = new ArrayList<>();
 
-  protected EngineList engineList = new EngineList();
+  public EngineList engineList = new EngineList();
 
   private SAT sat;
   private QuadTree qt;
@@ -64,7 +67,7 @@ public class PEngine {
   void draw() {
     APPLET.background(backgroundColor);
 
-    ArrayList<GameObject> object = engineList.getObjects();
+    List<GameObject> objects = engineList.getObjects();
     for (int i=0;i<objects.size();i++) {
       objects.get(i).render();
     }
@@ -83,7 +86,7 @@ public class PEngine {
       uniqueObjId++;
     }
     boolean inserted = false;
-    ArrayList<GameObject> objects = engineList.getObjects();
+      List<GameObject> objects = engineList.getObjects();
     for (int i=0;i<objects.size();i++) {
       if (objects.get(i).renderingPriority > g.renderingPriority) {
         engineList.addObject(i, g);
@@ -96,7 +99,9 @@ public class PEngine {
     qt.sortIn(g);
   }
   public void addData(byte[] bytes, int... iterator) {
-    data.add(idToClass.get(bytes[iterator[0]]).createData(bytes, iterator));
+    try {
+        Data d = idToClass.get(bytes[iterator[0]]).getMethod("createData").invoke(bytes, iterator));
+    } catch (Exception e) {}
   }
   //hier braucht es einen cleveren Weg sich in die Processing keyhooks einzuklinken
   void keyPressed() {

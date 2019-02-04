@@ -27,7 +27,7 @@ public class Data {
 
   @Override
   public String toString() {
-    return ((char) classID) + ((char) objectID);
+    return "" + (char) classID + (char) objectID;
   }
 
   float byteToFloat(byte[] b) {
@@ -89,7 +89,7 @@ public class Data {
     return toArray(ret);
   }
 
-  byte[] toArray(ArrayList<Byte> list) {
+  static byte[] toArray(ArrayList<Byte> list) {
     byte[] ret = new byte[list.size()];
     for (int i=0;i<list.size();i++) {
       ret[i] = list.get(i);
@@ -103,7 +103,7 @@ public class Data {
     }
     return s;
   }
-  byte[] subarray(byte[] b, int... index, int leng) {
+  byte[] subarray(byte[] b, int[] index, int leng) {
     byte[] ret = new byte[leng];
     for (int i=0;i<ret.length;i++) {
       ret[i] = b[index[0]++];
