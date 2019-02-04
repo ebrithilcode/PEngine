@@ -2,8 +2,14 @@ package com.pengine;
 
 import java.util.ArrayList;
 import java.util.List;
+import com.pengine.components.Component;
+import com.pengine.components.Collider;
+import com.pengine.components.Connection;
+import com.pengine.components.AbstractRenderer;
+import com.pengine.InputInternet.Data;
 
 import static com.pengine.PEngine.APPLET;
+import static com.pengine.PEngine.ENGINE;
 
 public class GameObject extends Data implements Updatable {
 
@@ -14,7 +20,7 @@ public class GameObject extends Data implements Updatable {
   boolean dead;
   float deltaTime;
   public boolean noGravity;
-  float maxRadius;
+  public float maxRadius;
   Boundary bounds;
   public float friction;
   //Bewegungen
@@ -31,6 +37,7 @@ public class GameObject extends Data implements Updatable {
 
   //Networking relevant
   public int objectID = -1;
+  public PEngine engine;
 
   public GameObject() {
     components = new ArrayList<>();
@@ -224,19 +231,18 @@ public class GameObject extends Data implements Updatable {
 
   //Data type methods:
 
-  @Override
   public static GameObject createData(byte[] b, int... index) {
     GameObject g = new GameObject();
     //Skip class ID;
     index[0]++;
     g.objectID = index[0]++;
     g.pos = Vector.createData(b, index);
-    int comNum = b[index++];
+    int comNum = b[index[0]++];
     for (int i=0;i<comNum;i++) {
-      g.components.add((Component) PEngine.createData(b, index));
+      g.components.add((Component) Component.createData(b, index));
       g.components.get(i).parent = g;
     }
-
+    return g;
   }
 
 
@@ -250,6 +256,7 @@ public class GameObject extends Data implements Updatable {
     for (int i=0;i<components.size();i++) {
       ret += components.get(i).toString();
     }
+    return ret;
   }
 
   public void updateData(byte[] b, int... index) {
@@ -264,7 +271,7 @@ public class GameObject extends Data implements Updatable {
       if (b[index[0]+1] == components.get(i).objectID)
         components.get(i).updateData(b, index);
       else
-        components.add(i, Component.createData(b, index));
+        components.add(i, (Component) Component.createData(b, index));
     }
   }
 }

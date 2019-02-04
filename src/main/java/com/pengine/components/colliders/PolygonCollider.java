@@ -11,7 +11,7 @@ import static com.pengine.PEngine.APPLET;
 
 public class PolygonCollider extends Collider {
 
-    Vector[] localPoints;
+    public Vector[] localPoints;
 
     public PolygonCollider(GameObject g) {
         super(g);

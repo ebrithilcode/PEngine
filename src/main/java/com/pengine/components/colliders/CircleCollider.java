@@ -1,13 +1,16 @@
-package com.pengine;
+package com.pengine.components.colliders;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import com.pengine.Vector;
+import com.pengine.GameObject;
+import com.pengine.components.Collider;
 
 public class CircleCollider extends Collider {
 
     Vector off;
-    float radius;
+    public float radius;
 
     {
         off = new Vector(0,0);

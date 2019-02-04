@@ -3,6 +3,11 @@ package com.pengine;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import com.pengine.components.Component;
+import com.pengine.components.Collider;
+import com.pengine.components.colliders.CircleCollider;
+import com.pengine.GameObject;
+import com.pengine.components.colliders.PolygonCollider;
 
 import static com.pengine.PEngine.APPLET;
 

@@ -30,7 +30,7 @@ public class ClientConnection extends Thread {
         while (alive) {
             buildInput();
             lastInput = listen();
-            buildObjectList();
+            buildData();
         }
     }
 

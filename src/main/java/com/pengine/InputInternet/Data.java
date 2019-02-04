@@ -9,18 +9,18 @@ public class Data {
   public static int classID;
   public int objectID;
 
-  Data() {}
+  public Data() {}
   Data(byte[] recData) {
 
   }
 
-  public static Data createData(byte[] bytes, int... index) {
+  public static Data createData(byte[] bytes, int[] index) {
     //Skip class and object ID
     index[0] += 2;
     return new Data();
   }
 
-  public void updateData(byte[] bytes, int... index) {
+  public void updateData(byte[] bytes, int[] index) {
     //Skip class and object id
     index[0] += 2;
   }
@@ -30,20 +30,20 @@ public class Data {
     return "" + (char) classID + (char) objectID;
   }
 
-  float byteToFloat(byte[] b) {
+  public static float byteToFloat(byte[] b) {
     return java.nio.ByteBuffer.wrap(b).getFloat();
   }
-  byte[] floatToByte(float f) {
+  public static byte[] floatToByte(float f) {
     return java.nio.ByteBuffer.allocate(4).putFloat(f).array();
   }
-  byte[] intToBytes(int i) {
+  public static byte[] intToBytes(int i) {
     return java.nio.ByteBuffer.allocate(4).putInt(i).array();
   }
-  int bytesToInt(byte[] b) {
+  public static int bytesToInt(byte[] b) {
     return java.nio.ByteBuffer.wrap(b).getInt();
   }
 
-  static String encodeString(String str) {
+  public static String encodeString(String str) {
     String ret = "";
     for (int i=0;i<str.length();i++) {
       char c = str.charAt(i);
@@ -61,7 +61,7 @@ public class Data {
     }
     return ret;
   }
-  static String decodeString(String str) {
+  public static String decodeString(String str) {
     String ret = "";
     for (int i=0;i<str.length();i++) {
       char c = str.charAt(i);
@@ -75,7 +75,7 @@ public class Data {
 
     return ret;
   }
-  static byte[] decodeBytes(byte[] byt) {
+  public static byte[] decodeBytes(byte[] byt) {
     ArrayList<Byte> ret = new ArrayList<Byte>();
     for (int i=0;i<byt.length;i++) {
       byte b = byt[i];
@@ -89,7 +89,7 @@ public class Data {
     return toArray(ret);
   }
 
-  static byte[] toArray(ArrayList<Byte> list) {
+  public static byte[] toArray(ArrayList<Byte> list) {
     byte[] ret = new byte[list.size()];
     for (int i=0;i<list.size();i++) {
       ret[i] = list.get(i);
@@ -97,13 +97,13 @@ public class Data {
     return ret;
   }
 
-  String concateByteArray(String s, byte[] b) {
+  public static String concateByteArray(String s, byte[] b) {
     for (byte by: b) {
       s += (char) by;
     }
     return s;
   }
-  byte[] subarray(byte[] b, int[] index, int leng) {
+  public static byte[] subarray(byte[] b, int[] index, int leng) {
     byte[] ret = new byte[leng];
     for (int i=0;i<ret.length;i++) {
       ret[i] = b[index[0]++];

@@ -17,6 +17,7 @@ import com.pengine.components.colliders.*;
 public class PEngine {
 
   public static PApplet APPLET;
+  public static PEngine ENGINE;
 
 
   public EngineList engineList = new EngineList();
@@ -44,6 +45,7 @@ public class PEngine {
 
   public PEngine(PApplet applet) {
     APPLET = applet;
+    ENGINE = this;
   }
 
   void setup() {
@@ -81,6 +83,9 @@ public class PEngine {
   }
 
   public void addObject(GameObject g) {
+
+    g.engine = this;
+
     if (g.objectID >0) {
       g.objectID = uniqueObjId;
       uniqueObjId++;
@@ -98,9 +103,13 @@ public class PEngine {
     g.setup();
     qt.sortIn(g);
   }
-  public void addData(byte[] bytes, int... iterator) {
+  public void createData(byte[] bytes, int[] iterator) {
     try {
-        Data d = idToClass.get(bytes[iterator[0]]).getMethod("createData").invoke(bytes, iterator));
+        Data d = (Data) idToClass.get(bytes[iterator[0]]).getMethod("createData", byte[].class, int[].class).invoke(bytes, iterator);
+        if (d instanceof GameObject) addObject((GameObject) d);
+        else if (d instanceof Input) engineList.addInput((Input)d);
+        else if (server != null) engineList.addClientData(d);
+        else if (client != null) engineList.addServerData(d);
     } catch (Exception e) {}
   }
   //hier braucht es einen cleveren Weg sich in die Processing keyhooks einzuklinken
@@ -184,6 +193,34 @@ public class PEngine {
     client.end();
   }
 
+  public void useData(byte[] bytes) {
+    bytes = Data.decodeBytes(bytes);
+    int[] iterator = new int[] {0};
+    while (iterator[0] < bytes.length) {
+      Data d = dataAlreadyExists(bytes[iterator[0]+1]);
+      if (d==null) {
+        createData(bytes, iterator);
+      } else {
+        d.updateData(bytes, iterator);
+      }
+    }
+  }
+
+  Data dataAlreadyExists(int id) {
+    for (Data d: engineList.getObjects()) {
+      if (d.objectID == id) return d;
+    }
+    for (Data d: engineList.getInputs()) {
+      if (d.objectID==id) return d;
+    }
+    for (Data d: engineList.getClientData()) {
+      if (d.objectID == id) return d;
+    }
+    return null;
+  }
+
+  //Physics
+
 
   public float  getPhysicsFrameRate() {
     return 1 / pt.deltaTime;
@@ -210,7 +247,7 @@ public class PEngine {
     }
 
     void managePhysics() {
-      ArrayList<GameObject> objects = engineList.getObjects();
+      List<GameObject> objects = engineList.getObjects();
       for (int i=0;i<objects.size();i++) {
         if (objects.get(i).earlyUpdate()) {
           objects.remove(i);

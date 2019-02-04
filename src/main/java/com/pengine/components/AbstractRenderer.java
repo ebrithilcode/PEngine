@@ -1,4 +1,6 @@
-package com.pengine;
+package com.pengine.components;
+
+import com.pengine.GameObject;
 
 public abstract class AbstractRenderer extends Component {
 

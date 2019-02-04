@@ -1,4 +1,7 @@
-package com.pengine;
+package com.pengine.components;
+
+import com.pengine.GameObject;
+import com.pengine.Vector;
 
 public class Connection extends Component {
 
@@ -50,7 +53,7 @@ public class Connection extends Component {
         }
     }
 
-    Vector getMassCenter() {
+    public Vector getMassCenter() {
         if (!(strength>0)) return parent.pos;
         Vector res = parent.pos.cmult(parent.mass);
         res.add(connected.getMassCenter().cmult(connected.getMass()*strength));
@@ -58,7 +61,7 @@ public class Connection extends Component {
         return res;
     }
 
-    float getMass() {
+    public float getMass() {
         if (strength>0)
             return (parent.mass+connected.getMass()*strength)/(1+strength);
         else

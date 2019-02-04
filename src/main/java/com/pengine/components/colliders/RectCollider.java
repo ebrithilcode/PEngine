@@ -1,7 +1,10 @@
-package com.pengine;
+package com.pengine.components.colliders;
 
 import java.util.ArrayList;
 import java.util.List;
+import com.pengine.Vector;
+import com.pengine.GameObject;
+import com.pengine.components.Collider;
 
 public class RectCollider extends PolygonCollider {
     public RectCollider(GameObject g) {

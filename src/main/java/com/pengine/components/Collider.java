@@ -9,8 +9,7 @@ import java.util.List;
 public abstract class Collider extends Component {
 
     public boolean isTrigger = true;
-    protected Vector[] globalPoints;
-    Vector lastPos;
+    public Vector[] globalPoints;
 
     public List<Collider> isColliding;
     public List<Collider> wasColliding;
@@ -37,7 +36,6 @@ public abstract class Collider extends Component {
 
     public boolean earlyUpdate() {
         moved = false;
-        lastPos = parent.pos;
         return false;
     }
 

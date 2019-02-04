@@ -1,6 +1,7 @@
 package com.pengine;
 
 import static com.pengine.PEngine.APPLET;
+import com.pengine.components.Collider;
 
 public class Collision {
 

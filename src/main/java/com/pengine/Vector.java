@@ -1,13 +1,16 @@
 package com.pengine;
 
 import static com.pengine.PEngine.APPLET;
+import com.pengine.InputInternet.Data;
 
-public class Vector extends Data{
+public class Vector extends Data {
 
   public float x;
   public float y;
   public float z;
 
+
+  public Vector(){};
   public Vector(float x, float y) {
     this.x = x;
     this.y = y;
@@ -131,10 +134,11 @@ public class Vector extends Data{
     return ret;
   }
 
-  @Override
-  public static Vector createData(byte[] b, int... index) {
+
+
+  public static Vector createData(byte[] b, int[] index) {
     Vector v = new Vector();
-    s//Skip class ID
+    //Skip class ID
     index[0]++;
     v.objectID = b[index[0]++];
     v.x = byteToFloat(subarray(b, index, 4));
@@ -143,10 +147,10 @@ public class Vector extends Data{
   }
 
   @Override
-  public void updateData(byte[] b, int... index) {
+  public void updateData(byte[] b, int[] index) {
     //Skip class and object id
     index[0] += 2;
-    x = byteToFloat(subarray(b, index[0], 4));
+    x = byteToFloat(subarray(b, index, 4));
     y = byteToFloat(subarray(b, index, 4));
   }
 
