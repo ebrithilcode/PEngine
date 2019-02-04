@@ -11,6 +11,8 @@ public class Data {
   public static int classID;
   public int objectID;
 
+  public boolean dontSendMePlease = true;
+
   public Data() {}
   Data(byte[] recData) {
 

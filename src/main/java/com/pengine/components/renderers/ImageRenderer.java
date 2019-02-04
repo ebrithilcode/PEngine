@@ -1,6 +1,6 @@
-package com.pengine.renderers;
+package com.pengine.components.renderers;
 
-import com.pengine.AbstractRenderer;
+import com.pengine.components.AbstractRenderer;
 import com.pengine.GameObject;
 import com.pengine.Vector;
 import processing.core.PImage;

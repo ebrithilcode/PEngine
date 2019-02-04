@@ -4,7 +4,7 @@ import com.pengine.GameObject;
 
 public abstract class AbstractRenderer extends Component {
 
-  AbstractRenderer() {}
+  public AbstractRenderer() {}
 
   protected AbstractRenderer(GameObject g) {
     super(g);

@@ -1,4 +1,4 @@
-package com.pengine.renderers;
+package com.pengine.components.renderers;
 
 import com.pengine.Vector;
 import processing.core.PImage;

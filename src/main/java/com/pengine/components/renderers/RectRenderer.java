@@ -1,6 +1,6 @@
-package com.pengine.renderers;
+package com.pengine.components.renderers;
 
-import com.pengine.AbstractRenderer;
+import com.pengine.components.AbstractRenderer;
 import com.pengine.GameObject;
 import com.pengine.Vector;
 
@@ -12,6 +12,7 @@ public class RectRenderer extends AbstractRenderer {
   Vector[] globalPoints = new Vector[0];
   /*color*/public int c;
 
+  public RectRenderer() {}
   public RectRenderer(GameObject g) {
     super(g);
     c = APPLET.color(0,0,255);
@@ -58,16 +59,16 @@ public class RectRenderer extends AbstractRenderer {
     }
     return ret;
   }
-  @Override
+
   public static RectRenderer createData(byte[] b, int... index) {
     RectRenderer rr = new RectRenderer();
     index[0] ++;
     rr.objectID = index[0]++;
     rr.c = bytesToInt(subarray(b, index, 4));
     int len = b[index[0]++];
-    localPoints = new Vector[len];
+    rr.localPoints = new Vector[len];
     for (int i=0;i<len;i++) {
-      localPoints[i] = Vector.createData(b, index);
+      rr.localPoints[i] = Vector.createData(b, index);
     }
     return rr;
   }
@@ -75,7 +76,7 @@ public class RectRenderer extends AbstractRenderer {
   public void updateData(byte[] b, int... index) {
     //Skip class and object id;
     index[0] += 2;
-    rr.c = bytesToInt(subarray(b, index, 4));
+    c = bytesToInt(subarray(b, index, 4));
     int len = b[index[0]++];
     if (localPoints.length!=len) {
       localPoints = new Vector[len];

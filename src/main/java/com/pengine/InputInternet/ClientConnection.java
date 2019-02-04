@@ -54,9 +54,11 @@ public class ClientConnection extends Thread {
     void buildMessage() {
             String s = "";
 
+            if (!engine.userInput.dontSendMePlease)
             s += engine.userInput.toString();
 
             for (Data d: engine.engineList.getClientData()) {
+                if (!d.dontSendMePlease)
                 s += d.toString();
             }
             s = Data.encodeString(s);

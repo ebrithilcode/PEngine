@@ -58,9 +58,11 @@ public class ServerConnection extends Thread {
      void buildData() {
             myMessageToSend = "";
             for (GameObject d: engine.engineList.getObjects()) {
+                if (!d.dontSendMePlease)
                 myMessageToSend += d.toString();
             }
             for (Data d: engine.engineList.getServerData()) {
+                if (!d.dontSendMePlease)
                 myMessageToSend += d.toString();
             }
             myMessageToSend = Data.encodeString(myMessageToSend);

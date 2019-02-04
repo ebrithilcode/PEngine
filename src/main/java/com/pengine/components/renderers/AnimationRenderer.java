@@ -1,6 +1,6 @@
-package com.pengine.renderers;
+package com.pengine.components.renderers;
 
-import com.pengine.AbstractRenderer;
+import com.pengine.components.AbstractRenderer;
 import com.pengine.GameObject;
 import processing.core.PImage;
 
@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.pengine.PEngine.APPLET;
+
 
 public class AnimationRenderer extends AbstractRenderer {
 

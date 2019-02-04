@@ -13,6 +13,7 @@ import com.pengine.InputInternet.Data;
 import com.pengine.components.Collider;
 import com.pengine.components.Component;
 import com.pengine.components.colliders.*;
+import com.pengine.components.renderers.*;
 
 public class PEngine {
 
@@ -51,6 +52,11 @@ public class PEngine {
   void setup() {
     classToId = new HashMap<>();
     idToClass = new HashMap<>();
+    registerClass(GameObject.class);
+    registerClass(Component.class);
+    registerClass(RectRenderer.class);
+    registerClass(CircleRenderer.class);
+
 
     APPLET.ellipseMode(APPLET.RADIUS);
     APPLET.imageMode(APPLET.CENTER);
@@ -156,7 +162,7 @@ public class PEngine {
 
   //Networking relevant
 
-  public <T extends GameObject> void registerClass(Class<T> cl) {
+  public <T extends Data> void registerClass(Class<T> cl) {
     if (!classToId.containsKey(cl)) {
       int val = classToId.size();
       classToId.put(cl, val);
