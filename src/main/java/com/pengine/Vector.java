@@ -127,31 +127,39 @@ public class Vector extends Data {
   @Override
   public String toString() {
     String ret = "";
-    ret += classID;
-    ret += objectID;
+    ret += (char) classID;
+    ret += (char) objectID;
     ret = concateByteArray(ret, floatToByte(x));
     ret = concateByteArray(ret, floatToByte(y));
+    ret += '\n';
     return ret;
   }
 
 
 
   public static Vector createData(byte[] b, int[] index) {
+    System.out.println("Building a Vector");
     Vector v = new Vector();
     //Skip class ID
     index[0]++;
     v.objectID = b[index[0]++];
+    System.out.println("Index is at: "+index[0]);
     v.x = byteToFloat(subarray(b, index, 4));
+    System.out.println("Index is at: "+index[0]);
     v.y = byteToFloat(subarray(b, index, 4));
+    System.out.println("Index is at: "+index[0]);
+    com.pengine.InputInternet.Data.nextWord(b, index);
     return v;
   }
 
   @Override
   public void updateData(byte[] b, int[] index) {
+
     //Skip class and object id
     index[0] += 2;
     x = byteToFloat(subarray(b, index, 4));
     y = byteToFloat(subarray(b, index, 4));
+    com.pengine.InputInternet.Data.nextWord(b, index);
   }
 
 }

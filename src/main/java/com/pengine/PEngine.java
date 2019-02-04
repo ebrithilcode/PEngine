@@ -2,6 +2,7 @@ package com.pengine;
 
 import processing.core.PApplet;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.HashMap;
@@ -35,7 +36,7 @@ public class PEngine {
 
   public PhysicsThread pt = new PhysicsThread();
 
-  public Input userInput;
+  public Input userInput = new Input();
 
   //Networking relevant
   public HashMap<Class<? extends Data>, Integer> classToId;
@@ -108,15 +109,37 @@ public class PEngine {
     g.setup();
     qt.sortIn(g);
   }
-  public void createData(byte[] bytes, int[] iterator, String ip) {
+  protected void buildAndAddData(byte[] bytes, int[] iterator, String ip) {
+    Data d = createData(bytes, iterator, ip);
+    if (d!=null) {
+      if (d instanceof GameObject) addObject((GameObject) d);
+      else if (d instanceof Input) engineList.addInput((Input) d);
+      else if (server != null) engineList.addClientData(d);
+      else if (client != null) engineList.addServerData(d);
+    }
+  }
+  public Data createData(byte[] bytes, int[] iterator, String ip) {
     try {
-        Data d = (Data) idToClass.get(bytes[iterator[0]]).getMethod("createData", byte[].class, int[].class).invoke(bytes, iterator);
+        int num = (int) bytes[iterator[0]];
+        System.out.println("Need the key: "+num);
+
+        Class c = idToClass.get(num);
+        System.out.println("Class: "+c);
+        java.lang.reflect.Method m = c.getMethod("createData", byte[].class, int[].class);
+        System.out.println("Method: "+m);
+        Data d = (Data) m.invoke(null, bytes, iterator);
+        System.out.println("Data: "+d);
         d.ip = ip;
-        if (d instanceof GameObject) addObject((GameObject) d);
-        else if (d instanceof Input) engineList.addInput((Input)d);
-        else if (server != null) engineList.addClientData(d);
-        else if (client != null) engineList.addServerData(d);
-    } catch (Exception e) {}
+        return d;
+    } catch (Exception e) {
+      System.out.println("Damn: " + e.getCause());
+      if (e instanceof InvocationTargetException) System.out.println((InvocationTargetException)e.getCause());
+      try {
+        Thread.sleep(500);
+
+      } catch (Exception ef) {}
+    }
+    return null;
   }
   //hier braucht es einen cleveren Weg sich in die Processing keyhooks einzuklinken
   void keyPressed() {
@@ -166,7 +189,14 @@ public class PEngine {
       int val = classToId.size();
       classToId.put(cl, val);
       idToClass.put(val, cl);
+      try {
+        cl.getDeclaredField("classID").setInt(null, val);
+        System.out.println("I dont know why but it seems to work");
+        System.out.println(cl.getDeclaredField("classID").getInt(null));
+      } catch (Exception e) {System.out.println(e);}
     } else System.out.println("Already contained");
+    System.out.println("Has zero: " +idToClass.containsKey(0));
+    System.out.println("Has zero there: " +classToId.containsKey(0));
   }
 
   public void startServer() {
@@ -205,8 +235,10 @@ public class PEngine {
     while (iterator[0] < bytes.length) {
       Data d = dataAlreadyExists(bytes[iterator[0]+1]);
       if (d==null) {
-        createData(bytes, iterator, ip);
+        System.out.println("I have got to create a whole new object out of: "+bytes.length + "bytes");
+        buildAndAddData(bytes, iterator, ip);
       } else {
+        System.out.println("I can update an existing object");
         d.updateData(bytes, iterator);
       }
     }

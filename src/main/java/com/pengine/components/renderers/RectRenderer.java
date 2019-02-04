@@ -8,8 +8,12 @@ import static com.pengine.PEngine.APPLET;
 
 public class RectRenderer extends AbstractRenderer {
 
+  public static int classID;
+
   Vector[] localPoints;
   Vector[] globalPoints = new Vector[0];
+
+
   /*color*/public int c;
 
 
@@ -55,17 +59,19 @@ public class RectRenderer extends AbstractRenderer {
   @Override
   public String toString() {
     String ret = "";
-    ret += classID;
-    ret += objectID;
+    ret += (char) classID;
+    ret += (char) objectID;
     ret = concateByteArray(ret, intToBytes(c));
     ret += (char) localPoints.length;
     for (int i=0;i<localPoints.length;i++) {
       ret += localPoints[i].toString();
     }
+    ret += '\n';
     return ret;
   }
 
   public static RectRenderer createData(byte[] b, int... index) {
+    System.out.println("Building a Rectrenderer");
     RectRenderer rr = new RectRenderer();
     index[0] ++;
     rr.objectID = index[0]++;
@@ -75,10 +81,12 @@ public class RectRenderer extends AbstractRenderer {
     for (int i=0;i<len;i++) {
       rr.localPoints[i] = Vector.createData(b, index);
     }
+    com.pengine.InputInternet.Data.nextWord(b, index);
     return rr;
   }
   @Override
   public void updateData(byte[] b, int... index) {
+
     //Skip class and object id;
     index[0] += 2;
     c = bytesToInt(subarray(b, index, 4));
@@ -95,6 +103,7 @@ public class RectRenderer extends AbstractRenderer {
       else
         localPoints[i] = Vector.createData(b, index);
     }
+    com.pengine.InputInternet.Data.nextWord(b, index);
 
   }
 

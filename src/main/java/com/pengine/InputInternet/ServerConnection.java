@@ -34,7 +34,7 @@ public class ServerConnection extends Thread {
     }
     private void send() {
         myServer.write( charToByte( myMessageToSend.toCharArray() ));
-
+        System.out.println("I just wrote a bunch of data to my clients. Uf");
         Client mc = myServer.available();
         while (mc!=null) {
             byte[] received = mc.readBytesUntil('\r');

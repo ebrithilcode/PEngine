@@ -38,7 +38,10 @@ public class ClientConnection extends Thread {
     void listen() {
         if (myClient.available()>0) {
             byte[] received = myClient.readBytesUntil('\r');
+            myClient.clear();
+            System.out.println("My client received: "+received.length+ " bytes data");
             myClient.write(messageToSend);
+            if (received.length>0)
             engine.useData(received, ip);
         }
     }

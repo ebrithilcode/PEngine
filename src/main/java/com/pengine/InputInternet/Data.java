@@ -55,6 +55,9 @@ public class Data {
         case '\r':
           ret += "ab";
           break;
+        case '\n':
+          ret += "ac";
+          break;
         case 'a':
           ret += "aa";
           break;
@@ -74,6 +77,7 @@ public class Data {
         char b = str.charAt(i);
         if (b=='a') ret += 'a';
         else if (b=='b') ret += '\r';
+        else if (b=='c') ret += '\n';
       } else ret+=c;
     }
 
@@ -88,6 +92,10 @@ public class Data {
         byte c = byt[i];
         if (c==97) ret.add((byte) 97);
         else if (c=='b') ret.add((byte)13);
+        else if (c=='c') {
+          ret.add((byte) '\n');
+          System.out.println("I found one n");
+        }
       } else ret.add(b);
     }
     return toArray(ret);
@@ -97,6 +105,7 @@ public class Data {
     byte[] ret = new byte[list.size()];
     for (int i=0;i<list.size();i++) {
       ret[i] = list.get(i);
+      if (ret[i] == (int) '\n') System.out.println("Found one at: "+i);
     }
     return ret;
   }
@@ -113,6 +122,18 @@ public class Data {
       ret[i] = b[index[0]++];
     }
     return ret;
+  }
+
+  public static void nextWord(byte[] b, int[] index) {
+    System.out.println("Starting search at: "+index[0]);
+    for (index[0] = index[0];index[0] < b.length; index[0]++) {
+      if (b[index[0]] == (int) '\n') {
+        System.out.println("Found one at: "+index[0]);
+        break;
+      }
+    }
+    index[0]++;
+
   }
 
 }

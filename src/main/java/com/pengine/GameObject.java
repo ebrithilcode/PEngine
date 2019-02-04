@@ -13,6 +13,8 @@ import static com.pengine.PEngine.ENGINE;
 
 public class GameObject extends Data implements Updatable {
 
+  public static int classID;
+
   List<Component> components;
   public Vector pos;
   public float rot;
@@ -236,7 +238,8 @@ public class GameObject extends Data implements Updatable {
 
   //Data type methods:
 
-  public static GameObject createData(byte[] b, int... index) {
+  public static GameObject createData(byte[] b, int[] index) {
+    System.out.println("Building a gameObject");
     GameObject g = new GameObject();
     //Skip class ID;
     index[0]++;
@@ -244,9 +247,10 @@ public class GameObject extends Data implements Updatable {
     g.pos = Vector.createData(b, index);
     int comNum = b[index[0]++];
     for (int i=0;i<comNum;i++) {
-      g.components.add((Component) Component.createData(b, index));
+      g.components.add((Component) ENGINE.createData(b, index, "I dont give a shit.com"));
       g.components.get(i).parent = g;
     }
+    Data.nextWord(b, index);
     return g;
   }
 
@@ -254,17 +258,22 @@ public class GameObject extends Data implements Updatable {
   @Override
   public String toString() {
     String ret = "";
-    ret += classID;
-    ret += objectID;
+
+    System.out.println("Anyway now I´m sending: "+classID);
+    ret += (char) classID;
+    ret += (char) objectID;
     ret += pos.toString();
     ret += (char) components.size();
     for (int i=0;i<components.size();i++) {
       ret += components.get(i).toString();
     }
+    ret += '\n';
+
     return ret;
   }
 
   public void updateData(byte[] b, int... index) {
+
     //Skip class and object id
     index[0] += 2;
     if (b[index[0]+1] == pos.objectID)
@@ -276,7 +285,8 @@ public class GameObject extends Data implements Updatable {
       if (b[index[0]+1] == components.get(i).objectID)
         components.get(i).updateData(b, index);
       else
-        components.add(i, (Component) Component.createData(b, index));
+        components.add(i, (Component) ENGINE.createData(b, index, "Neither do I Sir"));
     }
+    Data.nextWord(b, index);
   }
 }

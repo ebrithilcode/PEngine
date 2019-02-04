@@ -8,6 +8,8 @@ import static com.pengine.PEngine.APPLET;
 
 public class CircleRenderer extends AbstractRenderer {
 
+  public static int classID;
+
   private Vector off;
   private float radius;
   /*color*/public int c;
@@ -48,28 +50,32 @@ public class CircleRenderer extends AbstractRenderer {
   @Override
   public String toString() {
     String ret = "";
-    ret += classID;
-    ret += objectID;
+    ret += (char) classID;
+    ret += (char) objectID;
     ret = concateByteArray(ret, intToBytes(c));
     ret += (char) radius;
-
+    ret += '\n';
     return ret;
   }
 
   public static CircleRenderer createData(byte[] b, int... index) {
+    System.out.println("Building a circleRenderer");
     index[0] ++;
     CircleRenderer rr = new CircleRenderer();
     rr.objectID = index[0]++;
     rr.c = bytesToInt(subarray(b, index, 4));
     rr.radius = b[index[0]++];
+    com.pengine.InputInternet.Data.nextWord(b, index);
     return rr;
   }
   @Override
   public void updateData(byte[] b, int... index) {
+
     //Skip class and object id;
     index[0] += 2;
     c = bytesToInt(subarray(b, index, 4));
     radius = b[index[0]++];
+    com.pengine.InputInternet.Data.nextWord(b, index);
 
   }
 }
