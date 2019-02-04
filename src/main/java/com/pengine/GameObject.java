@@ -39,6 +39,11 @@ public class GameObject extends Data implements Updatable {
   public int objectID = -1;
   public PEngine engine;
 
+
+  {
+    dontSendMePlease = false;
+  }
+
   public GameObject() {
     components = new ArrayList<>();
     pos = new Vector(0,0);

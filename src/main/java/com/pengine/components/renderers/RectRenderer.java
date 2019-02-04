@@ -12,6 +12,11 @@ public class RectRenderer extends AbstractRenderer {
   Vector[] globalPoints = new Vector[0];
   /*color*/public int c;
 
+
+  {
+    dontSendMePlease = false;
+  }
+
   public RectRenderer() {}
   public RectRenderer(GameObject g) {
     super(g);

@@ -12,6 +12,10 @@ public class CircleRenderer extends AbstractRenderer {
   private float radius;
   /*color*/public int c;
 
+  {
+    dontSendMePlease = false;
+  }
+
   public CircleRenderer() {}
   public CircleRenderer(GameObject g) {
     super(g);

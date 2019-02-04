@@ -53,7 +53,6 @@ public class PEngine {
     classToId = new HashMap<>();
     idToClass = new HashMap<>();
     registerClass(GameObject.class);
-    registerClass(Component.class);
     registerClass(RectRenderer.class);
     registerClass(CircleRenderer.class);
 
