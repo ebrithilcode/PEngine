@@ -4,6 +4,8 @@ import static com.pengine.PEngine.APPLET;
 
 public class Input extends Data {
 
+  public String ip ="localhost";
+
   private HashMap<Character, Boolean> setKeys = new HashMap<Character, Boolean>();
   private HashMap<Character, Boolean> mouseButtons = new HashMap<>();
   private int mouseWheel;

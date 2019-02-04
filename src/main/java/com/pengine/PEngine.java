@@ -16,8 +16,7 @@ public class PEngine {
 
   public ArrayList<Data> otherData = new ArrayList<>();
 
-  protected List<GameObject> gameObjects = new ArrayList<>();
-  protected List<Data> otherEntities = new ArrayList<>();
+  protected EngineList engineList = new EngineList();
 
   private SAT sat;
   private QuadTree qt;
@@ -64,13 +63,15 @@ public class PEngine {
 
   void draw() {
     APPLET.background(backgroundColor);
+
+    ArrayList<GameObject> object = engineList.getObjects();
     for (int i=0;i<objects.size();i++) {
       objects.get(i).render();
     }
   }
   float getMaxSpeed() {
     float max = Float.MIN_VALUE;
-    for (GameObject g: objects) {
+    for (GameObject g: engineList.getObjects()) {
       max = APPLET.max(max, g.vel.mag());
     }
     return max;
@@ -82,9 +83,10 @@ public class PEngine {
       uniqueObjId++;
     }
     boolean inserted = false;
+    ArrayList<GameObject> objects = engineList.getObjects();
     for (int i=0;i<objects.size();i++) {
       if (objects.get(i).renderingPriority > g.renderingPriority) {
-        objects.add(i, g);
+        engineList.addObject(i, g);
         inserted = true;
         break;
       }
@@ -99,14 +101,14 @@ public class PEngine {
   //hier braucht es einen cleveren Weg sich in die Processing keyhooks einzuklinken
   void keyPressed() {
     userInput.manageKey(APPLET.key, true);
-    for (GameObject g: objects) {
+    for (GameObject g: engineList.getObjects()) {
       g.handleKey(true);
     }
   }
 
   void keyReleased() {
     userInput.manageKey(APPLET.key, false);
-    for (GameObject g: objects) {
+    for (GameObject g: engineList.getObjects()) {
       g.handleKey(false);
     }
   }
@@ -121,7 +123,7 @@ public class PEngine {
       if (!c.isTrigger) c1 = c;
     }
     if (c1 == null) return null;
-    for (GameObject go : objects) {
+    for (GameObject go : engineList.getObjects()) {
       if (go != g) {
           possible = go.getAllComponentsOfType(Collider.class);
           Collider c2 = null;
@@ -203,6 +205,7 @@ public class PEngine {
     }
 
     void managePhysics() {
+      ArrayList<GameObject> objects = engineList.getObjects();
       for (int i=0;i<objects.size();i++) {
         if (objects.get(i).earlyUpdate()) {
           objects.remove(i);
