@@ -4,8 +4,6 @@ import static com.pengine.PEngine.APPLET;
 
 public class Input extends Data {
 
-  public String ip ="localhost";
-
   private HashMap<Character, Boolean> setKeys = new HashMap<Character, Boolean>();
   private HashMap<Character, Boolean> mouseButtons = new HashMap<>();
   private int mouseWheel;
@@ -54,6 +52,11 @@ public class Input extends Data {
 
     mouseWheel = data[iterator];
 
+  }
+
+  public Input setIP(String ip) {
+    this.ip = ip;
+    return this;
   }
   public void manageKey(int k, boolean down) {
     if (down && !isPressed(k))

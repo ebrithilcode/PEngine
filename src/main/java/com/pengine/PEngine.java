@@ -103,9 +103,10 @@ public class PEngine {
     g.setup();
     qt.sortIn(g);
   }
-  public void createData(byte[] bytes, int[] iterator) {
+  public void createData(byte[] bytes, int[] iterator, String ip) {
     try {
         Data d = (Data) idToClass.get(bytes[iterator[0]]).getMethod("createData", byte[].class, int[].class).invoke(bytes, iterator);
+        d.ip = ip;
         if (d instanceof GameObject) addObject((GameObject) d);
         else if (d instanceof Input) engineList.addInput((Input)d);
         else if (server != null) engineList.addClientData(d);
@@ -193,13 +194,13 @@ public class PEngine {
     client.end();
   }
 
-  public void useData(byte[] bytes) {
+  public void useData(byte[] bytes, String ip) {
     bytes = Data.decodeBytes(bytes);
     int[] iterator = new int[] {0};
     while (iterator[0] < bytes.length) {
       Data d = dataAlreadyExists(bytes[iterator[0]+1]);
       if (d==null) {
-        createData(bytes, iterator);
+        createData(bytes, iterator, ip);
       } else {
         d.updateData(bytes, iterator);
       }

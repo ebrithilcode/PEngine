@@ -6,6 +6,8 @@ import com.pengine.Vector;
 
 public class Data {
 
+  public String ip = "localhost";
+
   public static int classID;
   public int objectID;
 

@@ -17,7 +17,7 @@ public class ServerConnection extends Thread {
 
     PEngine engine;
 
-    private Data toSend;
+    private String myMessageToSend;
     public ServerConnection(PEngine e) {
         alive = true;
         engine = e;
@@ -26,32 +26,19 @@ public class ServerConnection extends Thread {
     public void run() {
         while (alive) {
             buildData();
-            if (toSend!=null) {
-                send();
-            } else APPLET.delay(1);
+            send();
         }
     }
     public void end() {
         alive = false;
     }
     private void send() {
-        String sending = "";
-        if (toSend instanceof TransformList) sending+= (char) 0;
-        if (toSend instanceof Input) sending += (char) 1;
-        sending += toSend.toString();
-        myServer.write( charToByte( sending.toCharArray() ));
+        myServer.write( charToByte( myMessageToSend.toCharArray() ));
 
         Client mc = myServer.available();
         while (mc!=null) {
             byte[] received = mc.readBytesUntil('\r');
-            Data input = null;
-            switch(received[0]) {
-                case 0:
-                    input = new TransformList(received);
-                case 1:
-                    input = new Input(received);
-            }
-            clientData.put(mc.ip(), input);
+            engine.useData(received, mc.ip());
             mc = myServer.available();
         }
     }
@@ -68,13 +55,16 @@ public class ServerConnection extends Thread {
 
 
 
-    void buildData() {
-        String s = "";
-        for (GameObject d: engine.engineList.getObjects()) {
-            s += d.toString();
-        }
-        s = Data.encodeString(s);
-        s += '\r';
+     void buildData() {
+            myMessageToSend = "";
+            for (GameObject d: engine.engineList.getObjects()) {
+                myMessageToSend += d.toString();
+            }
+            for (Data d: engine.engineList.getServerData()) {
+                myMessageToSend += d.toString();
+            }
+            myMessageToSend = Data.encodeString(myMessageToSend);
+            myMessageToSend += '\r';
 
     }
 
