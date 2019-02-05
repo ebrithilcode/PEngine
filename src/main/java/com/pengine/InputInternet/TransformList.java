@@ -18,8 +18,10 @@ class TransformList extends Data {
     //  4 bytes posy
     //  4 bytes rotation
 
-    ArrayList<Transform> positions = new ArrayList<Transform>();
+    ArrayList<Transform> positions = new ArrayList<>();
+
     TransformList() {}
+
     TransformList(byte[] recData) {
         recData = decodeBytes(recData);
         int num = recData[1];
@@ -49,6 +51,7 @@ class TransformList extends Data {
             positions.add(new Transform(classID, objectID, vec, rot));
         }
     }
+
     @Override
     public String toString() {
         String str = "";

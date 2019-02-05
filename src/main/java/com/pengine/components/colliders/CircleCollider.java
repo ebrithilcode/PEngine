@@ -11,6 +11,7 @@ public class CircleCollider extends Collider {
 
     Vector off;
     public float radius;
+    CollisionDetectionSystem;
 
     {
         off = new Vector(0,0);

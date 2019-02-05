@@ -1,8 +1,11 @@
-package com.pengine;
+package com.pengine.components.collisiondetection;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
+import com.pengine.Collision;
+import com.pengine.Vector;
 import com.pengine.components.Component;
 import com.pengine.components.Collider;
 import com.pengine.components.colliders.CircleCollider;
@@ -99,10 +102,12 @@ public class SAT {
     if (switched) best.mult(-1);
     return new Vector[] {best.mult(bVal), collisionPoint};
   }
-  private boolean xor(boolean b1, boolean b2) {
-    return (b1||b2)&& !(b1&&b2);
-  }
 
+  private boolean xor(boolean b1, boolean b2) {
+    //return (b1||b2)&& !(b1&&b2); lol
+    // b1 != b2
+    return b1 ^ b2;
+  }
 
   Projection[] projectBoth(Vector[] p1, Vector[] p2, Vector aim) {
     float mag = aim.mag();
@@ -223,7 +228,8 @@ public class SAT {
       }
     }
   }*/
-    void manageCollisions(List<GameObject> obs1, List<GameObject> obs2) {
+
+  public void manageCollisions(List<GameObject> obs1, List<GameObject> obs2) {
         for (int i=0;i<obs1.size();i++) {
             List<Collider> possibles1 = obs1.get(i).getAllComponentsOfType(Collider.class);
             for (Collider c1: possibles1) {
@@ -244,7 +250,7 @@ public class SAT {
         }
     }
 
-  void solve() {
+  public void solve() {
     //Sort by mass
     for (int i=0;i<collisions.size()-1;i++) {
       for (int o=i+1;o<collisions.size();o++) {

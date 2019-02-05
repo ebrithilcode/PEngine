@@ -1,6 +1,6 @@
 package com.pengine;
 
-import com.pengine.SAT;
+import com.pengine.components.collisiondetection.SAT;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,18 +10,25 @@ import static com.pengine.PEngine.APPLET;
 public class QuadTree {
 
   QuadTree parent;
-  List<GameObject> holdObjects;
+
+  //List<GameObject> holdObjects;
+
   List<GameObject> toCheck;
+
+  List<Entity> entitiesInside;
+
   QuadTree[] children;
-  Boundary room;
+
+  private AABB boundingBox;
   float maxSpeed;
+
   SAT sat;
 
   public QuadTree(SAT s){
     sat = s;
     holdObjects = new ArrayList<GameObject>();
     children = new QuadTree[0];
-    room = new Boundary(new Vector(0,0), new Vector(APPLET.width, APPLET.height));
+    boundingBox = new AABB(0,0, APPLET.width, APPLET.height);
   }
 
   public QuadTree(QuadTree p, SAT s) {
