@@ -73,12 +73,16 @@ public class PEngine {
   }
 
   void draw() {
-    APPLET.background(backgroundColor);
+    //try {
+      APPLET.background(backgroundColor);
 
-    List<GameObject> objects = engineList.getObjects();
-    for (int i=0;i<objects.size();i++) {
-      objects.get(i).render();
-    }
+      List<GameObject> objects = engineList.getObjects();
+      for (int i = 0; i < objects.size(); i++) {
+        objects.get(i).render();
+      }
+
+      System.out.println("Uhh looping at least?");
+    //} catch (Exception e) { System.out.println(e); }
   }
   float getMaxSpeed() {
     float max = Float.MIN_VALUE;
@@ -92,10 +96,11 @@ public class PEngine {
 
     g.engine = this;
 
-    if (g.objectID >0) {
+    //I dont know why i was checking for that though it creates a bunch of problems, will just comment it
+    //if (g.objectID >0) {
       g.objectID = uniqueObjId;
       uniqueObjId++;
-    }
+    //}
     boolean inserted = false;
       List<GameObject> objects = engineList.getObjects();
     for (int i=0;i<objects.size();i++) {
@@ -112,7 +117,10 @@ public class PEngine {
   protected void buildAndAddData(byte[] bytes, int[] iterator, String ip) {
     Data d = createData(bytes, iterator, ip);
     if (d!=null) {
-      if (d instanceof GameObject) addObject((GameObject) d);
+      if (d instanceof GameObject) {
+        addObject((GameObject) d);
+        System.out.println("Adding an object to the qeue");
+      }
       else if (d instanceof Input) engineList.addInput((Input) d);
       else if (server != null) engineList.addClientData(d);
       else if (client != null) engineList.addServerData(d);
@@ -183,22 +191,6 @@ public class PEngine {
   }
 
   //Networking relevant
-
-  public <T extends Data> void registerClass(Class<T> cl) {
-    if (!classToId.containsKey(cl)) {
-      int val = classToId.size();
-      classToId.put(cl, val);
-      idToClass.put(val, cl);
-      try {
-        cl.getDeclaredField("classID").setInt(null, val);
-        System.out.println("I dont know why but it seems to work");
-        System.out.println(cl.getDeclaredField("classID").getInt(null));
-      } catch (Exception e) {System.out.println(e);}
-    } else System.out.println("Already contained");
-    System.out.println("Has zero: " +idToClass.containsKey(0));
-    System.out.println("Has zero there: " +classToId.containsKey(0));
-  }
-
   public void startServer() {
     server = new ServerConnection(this);
     server.start();
@@ -229,24 +221,40 @@ public class PEngine {
     client.end();
   }
 
+  public <T extends Data> void registerClass(Class<T> cl) {
+    if (!classToId.containsKey(cl)) {
+      int val = classToId.size();
+      classToId.put(cl, val);
+      idToClass.put(val, cl);
+      try {
+        cl.getDeclaredField("classID").setInt(null, val);
+        Thread.sleep(100);
+      } catch (Exception e) {System.out.println(e);}
+    }
+  }
+
+
+
   public void useData(byte[] bytes, String ip) {
     bytes = Data.decodeBytes(bytes);
     int[] iterator = new int[] {0};
-    while (iterator[0] < bytes.length) {
+    while (iterator[0] < bytes.length-1) {
       Data d = dataAlreadyExists(bytes[iterator[0]+1]);
       if (d==null) {
-        System.out.println("I have got to create a whole new object out of: "+bytes.length + "bytes");
         buildAndAddData(bytes, iterator, ip);
       } else {
-        System.out.println("I can update an existing object");
         d.updateData(bytes, iterator);
       }
     }
   }
 
   Data dataAlreadyExists(int id) {
+    System.out.println("Looking for. "+id);
     for (Data d: engineList.getObjects()) {
-      if (d.objectID == id) return d;
+      if (d.objectID == id) {
+        System.out.println("Found: "+d.objectID);
+        return d;
+      }
     }
     for (Data d: engineList.getInputs()) {
       if (d.objectID==id) return d;

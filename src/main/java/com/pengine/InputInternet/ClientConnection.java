@@ -27,8 +27,10 @@ public class ClientConnection extends Thread {
     }
     public void run() {
         while (alive) {
+            int startTime = APPLET.millis();
             buildMessage();
             listen();
+            APPLET.delay(APPLET.max(0, 500-(APPLET.millis()-startTime)));
         }
     }
 

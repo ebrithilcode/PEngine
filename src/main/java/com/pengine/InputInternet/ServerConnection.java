@@ -25,8 +25,10 @@ public class ServerConnection extends Thread {
 
     public void run() {
         while (alive) {
+            int startTime = APPLET.millis();
             buildData();
             send();
+            APPLET.delay(APPLET.max(0, 17-(APPLET.millis()-startTime)));
         }
     }
     public void end() {

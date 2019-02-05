@@ -152,8 +152,11 @@ public class GameObject extends Data implements Updatable {
     return mass;
   }
   public void render() {
+    System.out.println("Rendering a gameObject with "+components.size() + " components");
+    System.out.println("At position "+pos.x+"/"+pos.y);
     for (Component c: components) {
       if (c instanceof AbstractRenderer) {
+        System.out.println("Hooray");
         ((AbstractRenderer)c).show();
       }
     }
@@ -239,17 +242,20 @@ public class GameObject extends Data implements Updatable {
   //Data type methods:
 
   public static GameObject createData(byte[] b, int[] index) {
-    System.out.println("Building a gameObject");
     GameObject g = new GameObject();
     //Skip class ID;
     index[0]++;
-    g.objectID = index[0]++;
+    g.objectID = b[index[0]++];
     g.pos = Vector.createData(b, index);
     int comNum = b[index[0]++];
     for (int i=0;i<comNum;i++) {
-      g.components.add((Component) ENGINE.createData(b, index, "I dont give a shit.com"));
-      g.components.get(i).parent = g;
+      Component c = (Component) ENGINE.createData(b, index, "I dont give a shit.com");
+      System.out.println("The circleRenderer i have in mind is named: "+c);
+      System.out.println("With a color of "+ ((com.pengine.components.renderers.CircleRenderer)c).c);
+      c.parent = g;
+      g.components.add(c);
     }
+    System.out.println("My vector is: "+g.pos.x);
     Data.nextWord(b, index);
     return g;
   }
@@ -259,7 +265,6 @@ public class GameObject extends Data implements Updatable {
   public String toString() {
     String ret = "";
 
-    System.out.println("Anyway now I´m sending: "+classID);
     ret += (char) classID;
     ret += (char) objectID;
     ret += pos.toString();
@@ -280,13 +285,19 @@ public class GameObject extends Data implements Updatable {
     pos.updateData(b, index);
     else
     pos = Vector.createData(b, index);
-
-    for (int i=0;i<b[index[0]++];i++) {
+    int compsToAdd = b[index[0]++];
+    for (int i=0;i<compsToAdd;i++) {
       if (b[index[0]+1] == components.get(i).objectID)
         components.get(i).updateData(b, index);
-      else
-        components.add(i, (Component) ENGINE.createData(b, index, "Neither do I Sir"));
+      else {
+        Component c = (Component) ENGINE.createData(b, index, "I dont give a shit.com");
+        System.out.println("The circleRenderer i have in mind is named: "+c);
+        System.out.println("With a color of "+ ((com.pengine.components.renderers.CircleRenderer)c).c);
+        c.parent = this;
+        components.add(c);
+      }
     }
+    System.out.println("My vector is: "+pos.x);
     Data.nextWord(b, index);
   }
 }
