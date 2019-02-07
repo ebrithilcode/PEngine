@@ -2,7 +2,7 @@ package com.pengine.components.colliders;
 
 import java.util.ArrayList;
 import java.util.List;
-import com.pengine.Vector;
+
 import com.pengine.GameObject;
 import com.pengine.components.Collider;
 
@@ -12,11 +12,11 @@ public class RectCollider extends PolygonCollider {
     }
 
     @Override
-    public List<Vector> collisionNormals(Collider other) {
-        List<Vector> ret = new ArrayList<Vector>();
+    public List<PVector> collisionNormals(Collider other) {
+        List<PVector> ret = new ArrayList<PVector>();
         for (int i=0;i<2;i++) {
-            Vector dist = globalPoints[i].csub(globalPoints[(i+1)]);
-            ret.add(new Vector(-dist.y, dist.x));
+            PVector dist = globalPoints[i].csub(globalPoints[(i+1)]);
+            ret.add(new PVector(-dist.y, dist.x));
         }
         return ret;
     }

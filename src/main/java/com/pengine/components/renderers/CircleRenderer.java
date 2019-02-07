@@ -2,13 +2,12 @@ package com.pengine.components.renderers;
 
 import com.pengine.components.AbstractRenderer;
 import com.pengine.GameObject;
-import com.pengine.Vector;
 
 import static com.pengine.PEngine.APPLET;
 
 public class CircleRenderer extends AbstractRenderer {
 
-  private Vector off;
+  private PVector off;
   private float radius;
   /*color*/public int c;
 
@@ -19,14 +18,14 @@ public class CircleRenderer extends AbstractRenderer {
   public CircleRenderer() {}
   public CircleRenderer(GameObject g) {
     super(g);
-    off = new Vector(0, 0);
+    off = new PVector(0, 0);
     radius = 10;
     c = APPLET.color(0, 0, 255);
   }
 
   public void show() {
     APPLET.fill(c);
-    Vector position = off.copy().add(parent.pos);
+    PVector position = off.copy().add(parent.pos);
     APPLET.ellipse(position.x, position.y, radius, radius);
   }
 
@@ -34,13 +33,13 @@ public class CircleRenderer extends AbstractRenderer {
     radius = v;
   }
 
-  public void setOff(Vector v) {
+  public void setOff(PVector v) {
     off = v;
   }
   public float getRadius() {
     return radius;
   }
-  public Vector getOff() {
+  public PVector getOff() {
     return off;
   }
 

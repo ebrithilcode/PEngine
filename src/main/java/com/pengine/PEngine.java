@@ -28,7 +28,7 @@ public class PEngine {
   int steps = 1;
   public float floorFriction = 1.0f;
   public boolean useFloorFriction;
-  public ArrayList<Vector> globalForces = new ArrayList<>();
+  public ArrayList<PVector> globalForces = new ArrayList<>();
 
   public int backgroundColor;
 
@@ -61,7 +61,7 @@ public class PEngine {
     APPLET.rectMode(APPLET.CENTER);
     sat = new SAT();
     qt = new QuadTree(sat);
-    qt.room = new Boundary(new Vector(0,0), new Vector(APPLET.width, APPLET.height));
+    qt.room = new Boundary(new PVector(0,0), new PVector(APPLET.width, APPLET.height));
     qt.room.infinite = true;
     backgroundColor = APPLET.color(255);
 
@@ -287,7 +287,7 @@ public class PEngine {
       }
 
       //applies global forces (Like gravity)
-      for (Vector v: globalForces) {
+      for (PVector v: globalForces) {
         for (GameObject g: objects) {
           if (g.getMass()>0 && !g.noGravity) {
             g.addVelocity(v.cdiv(g.getMass()*APPLET.frameRate));
@@ -298,7 +298,7 @@ public class PEngine {
       //Floor friction
       if (useFloorFriction) {
         for (GameObject g: objects) {
-          Vector fri = g.vel.cmult(-(g.friction+floorFriction)/2f);
+          PVector fri = g.vel.cmult(-(g.friction+floorFriction)/2f);
           g.vel.add(fri);
         }
       }

@@ -2,7 +2,6 @@ package com.pengine.components;
 
 import com.pengine.GameObject;
 import com.pengine.InputInternet.Data;
-import com.pengine.Vector;
 import com.pengine.Updatable;
 
 
@@ -31,16 +30,16 @@ public abstract class Component extends Data implements Updatable {
 
   public void movement() {}
 
-  public Vector rotateVector(Vector vec, Vector center, float deg) {
-    Vector toRot = vec.copy().sub(center);
+  public PVector rotateVector(PVector vec, PVector center, float deg) {
+    PVector toRot = vec.copy().sub(center);
     float re = APPLET.cos(deg);
     float im = APPLET.sin(deg);
-    Vector newRot = new Vector(toRot.x * re - toRot.y * im, toRot.x * im + toRot.y * re);
+    PVector newRot = new PVector(toRot.x * re - toRot.y * im, toRot.x * im + toRot.y * re);
     return newRot.add(center);
   }
 
-  public Vector[] rectPoints(float wid, float hei) {
-    return new Vector[] {new Vector(-wid/2f, -hei/2f), new Vector(wid/2f, -hei/2f), new Vector(wid/2f, hei/2f), new Vector(-wid/2f, hei/2f)};
+  public PVector[] rectPoints(float wid, float hei) {
+    return new PVector[] {new PVector(-wid/2f, -hei/2f), new PVector(wid/2f, -hei/2f), new PVector(wid/2f, hei/2f), new PVector(-wid/2f, hei/2f)};
   }
 
   

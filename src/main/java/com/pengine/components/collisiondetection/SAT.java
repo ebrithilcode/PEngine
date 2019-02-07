@@ -5,12 +5,9 @@ import java.util.Collection;
 import java.util.List;
 
 import com.pengine.Collision;
-import com.pengine.Vector;
-import com.pengine.components.Component;
 import com.pengine.components.Collider;
 import com.pengine.components.colliders.CircleCollider;
 import com.pengine.GameObject;
-import com.pengine.components.colliders.PolygonCollider;
 
 import static com.pengine.PEngine.APPLET;
 
@@ -22,31 +19,31 @@ public class SAT {
     collisions = new ArrayList<>();
   }
 
-  public Vector[] isColliding(Collider c1, Collider c2) {
-    Vector collisionPoint = new Vector(0,0);
+  public PVector[] isColliding(Collider c1, Collider c2) {
+    PVector collisionPoint = new PVector(0,0);
     //Circle circle
     if (c1 instanceof CircleCollider && c2 instanceof CircleCollider) {
-      Vector out = circleCircle((CircleCollider) c1, (CircleCollider) c2);
-      Vector dif = c2.parent.pos.csub(c1.parent.pos);
+      PVector out = circleCircle((CircleCollider) c1, (CircleCollider) c2);
+      PVector dif = c2.parent.pos.csub(c1.parent.pos);
       dif.setMag(((CircleCollider)c1).radius);
       collisionPoint = c1.parent.pos.cadd(dif);
-      return new Vector[] {out, collisionPoint};
+      return new PVector[] {out, collisionPoint};
     }
 
     //Mixed
-    Collection<Vector> c1Normals = c1.collisionNormals(c2);
-    Collection<Vector> c2Normals = c2.collisionNormals(c1);
+    Collection<PVector> c1Normals = c1.collisionNormals(c2);
+    Collection<PVector> c2Normals = c2.collisionNormals(c1);
 
-    List<Vector> normals = new ArrayList<>();
+    List<PVector> normals = new ArrayList<>();
     normals.addAll(c1Normals);
     normals.addAll(c2Normals);
-    //for (Vector d: c2Normals) normals.add(d);
+    //for (PVector d: c2Normals) normals.add(d);
 
-    for (Vector p : normals) {
+    for (PVector p : normals) {
       p.normalize();
     }
 
-    Vector best = new Vector(1,1);
+    PVector best = new PVector(1,1);
     float bVal = Float.MAX_VALUE;
     OverlapReturn bestORet = new OverlapReturn();
     boolean switched = c1 instanceof CircleCollider;
@@ -59,11 +56,11 @@ public class SAT {
     }
 
     for (int i=0;i<normals.size();i++) {
-      Vector n = normals.get(i);
+      PVector n = normals.get(i);
       OverlapReturn test = one ? circleRect(c1.globalPoints, c2.globalPoints, n, ((CircleCollider) c2).radius) : rectRect(c1.globalPoints, c2.globalPoints, n);
 
       if (test.out2==0) {
-        return new Vector[] {new Vector(0, 0)};
+        return new PVector[] {new PVector(0, 0)};
       }
 
       if (APPLET.abs(test.out2) < APPLET.abs(bVal)) {
@@ -82,7 +79,7 @@ public class SAT {
         collisionPoint = bestORet.p2.copy().add(best);
         break;
         case 2:
-        Vector helpMe = best.copy();
+        PVector helpMe = best.copy();
         helpMe.setMag(helpMe.mag() - ((CircleCollider) c2).radius);
         collisionPoint = bestORet.p2.copy().add(helpMe);
         break;
@@ -100,7 +97,7 @@ public class SAT {
     }
 
     if (switched) best.mult(-1);
-    return new Vector[] {best.mult(bVal), collisionPoint};
+    return new PVector[] {best.mult(bVal), collisionPoint};
   }
 
   private boolean xor(boolean b1, boolean b2) {
@@ -109,7 +106,7 @@ public class SAT {
     return b1 ^ b2;
   }
 
-  Projection[] projectBoth(Vector[] p1, Vector[] p2, Vector aim) {
+  Projection[] projectBoth(PVector[] p1, PVector[] p2, PVector aim) {
     float mag = aim.mag();
 
     Projection[] proP1 = new Projection[p1.length];
@@ -158,17 +155,17 @@ public class SAT {
     return ret;
   }
 
-  Vector circleCircle(CircleCollider c1, CircleCollider c2) {
-    Vector ret = c2.globalPoints[0].copy().sub(c1.globalPoints[0]);
+  PVector circleCircle(CircleCollider c1, CircleCollider c2) {
+    PVector ret = c2.globalPoints[0].copy().sub(c1.globalPoints[0]);
     ret.setMag(APPLET.max((c1.radius + c2.radius) - ret.mag(), 0));
     return ret;
   }
-  OverlapReturn circleRect(Vector[] p1, Vector[] p2, Vector aim, float rad) {
+  OverlapReturn circleRect(PVector[] p1, PVector[] p2, PVector aim, float rad) {
     Projection[] projected = projectBoth(p1, p2, aim);
-    OverlapReturn or = overlap(projected[0], projected[1], projected[2], new Projection(new Vector(0,0),rad), 2);
+    OverlapReturn or = overlap(projected[0], projected[1], projected[2], new Projection(new PVector(0,0),rad), 2);
     return or;
   }
-  OverlapReturn rectRect(Vector[] p1, Vector[] p2, Vector aim) {
+  OverlapReturn rectRect(PVector[] p1, PVector[] p2, PVector aim) {
     Projection[] projected = projectBoth(p1, p2, aim);
     return overlap(projected[0], projected[1], projected[2], projected[3], 0);
   }
@@ -215,7 +212,7 @@ public class SAT {
         for (int o=i+1;o<objects.size();o++) {
           for (Collider c2: objects.get(o).getAllComponentsOfType(Collider.class)) {
             if (!c1.blackList.contains(c2) && !c2.blackList.contains(c1)) {
-              Vector[] p = isColliding(c1,c2);
+              PVector[] p = isColliding(c1,c2);
               if (p[0].mag()!=0) {
                 boolean a1 = objects.get(i).onCollision(c2, p[0].cmult(-1), c1);
                 boolean a2 = objects.get(o).onCollision(c1, p[0].copy(), c2);
@@ -236,7 +233,7 @@ public class SAT {
                 for (int o=i+1;o<obs2.size();o++) {
                     for (Collider c2: obs2.get(o).getAllComponentsOfType(Collider.class)) {
                         if (!c1.blackList.contains(c2) && !c2.blackList.contains(c1)) {
-                            Vector[] p = isColliding(c1,c2);
+                            PVector[] p = isColliding(c1,c2);
                             if (p[0].mag()!=0) {
                                 boolean a1 = obs1.get(i).onCollision(c2, p[0].cmult(-1), c1);
                                 boolean a2 = obs2.get(o).onCollision(c1, p[0].copy(), c2);
@@ -284,8 +281,8 @@ public class SAT {
 
   private class OverlapReturn {
 
-    Vector p1;
-    Vector p2;
+    PVector p1;
+    PVector p2;
     float out2;
     boolean x1y2;
     int circle;
@@ -297,10 +294,10 @@ public class SAT {
 
   private class Projection {
 
-    Vector truePoint;
+    PVector truePoint;
     float val;
 
-    Projection(Vector tp, float v) {
+    Projection(PVector tp, float v) {
       truePoint = tp;
       val = v;
     }

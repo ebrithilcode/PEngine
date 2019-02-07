@@ -1,7 +1,6 @@
 package com.pengine.components.colliders;
 
 import com.pengine.GameObject;
-import com.pengine.Vector;
 import com.pengine.components.Collider;
 
 import java.util.ArrayList;
@@ -11,23 +10,23 @@ import static com.pengine.PEngine.APPLET;
 
 public class PolygonCollider extends Collider {
 
-    public Vector[] localPoints;
+    public PVector[] localPoints;
 
     public PolygonCollider(GameObject g) {
         super(g);
     }
 
-    public List<Vector> collisionNormals(Collider other) {
-        List<Vector> allCollisionNormals = new ArrayList<>();
+    public List<PVector> collisionNormals(Collider other) {
+        List<PVector> allCollisionNormals = new ArrayList<>();
         for (int i=0; i<globalPoints.length; i++) {
-            Vector dist = globalPoints[i].csub(globalPoints[(i+1)%globalPoints.length]);
-            allCollisionNormals.add(new Vector(-dist.y, dist.x));
+            PVector dist = globalPoints[i].csub(globalPoints[(i+1)%globalPoints.length]);
+            allCollisionNormals.add(new PVector(-dist.y, dist.x));
         }
         return allCollisionNormals;
     }
 
-    public Vector closestPoint(Vector p) {
-        Vector cl = globalPoints[0];
+    public PVector closestPoint(PVector p) {
+        PVector cl = globalPoints[0];
         float d = cl.dist(p);
 
         for (int i=1;i<globalPoints.length;i++) {
@@ -41,23 +40,23 @@ public class PolygonCollider extends Collider {
     }
 
     public void setPoints() {
-        globalPoints = new Vector[localPoints.length];
+        globalPoints = new PVector[localPoints.length];
         for (int i = 0;i<localPoints.length; i++) {
-            Vector help = localPoints[i].copy().add(parent.pos);
+            PVector help = localPoints[i].copy().add(parent.pos);
             help = rotateVector(help, parent.pos, parent.rot);
             globalPoints[i] = help;
         }
     }
 
-    public void setLocalPoints(Vector[] p) {
-        for (Vector pv : p) {
+    public void setLocalPoints(PVector[] p) {
+        for (PVector pv : p) {
             parent.maxRadius = APPLET.max(pv.mag(), parent.maxRadius);
         }
         localPoints = p;
     }
 
-    public void shiftPoints(Vector p) {
-        for (Vector po : localPoints) {
+    public void shiftPoints(PVector p) {
+        for (PVector po : localPoints) {
             po.add(p);
         }
     }

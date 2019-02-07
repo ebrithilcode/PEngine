@@ -1,7 +1,6 @@
 package com.pengine.components;
 
 import com.pengine.GameObject;
-import com.pengine.Vector;
 
 public class Connection extends Component {
 
@@ -46,16 +45,16 @@ public class Connection extends Component {
         return false;
     }
 
-    public void apply(Vector speed, float angVel) {
+    public void apply(PVector speed, float angVel) {
         if (strength>0) {
             connected.addVelocity(speed.cmult(strength));
             connected.addAngularVelocity(angVel * strength);
         }
     }
 
-    public Vector getMassCenter() {
+    public PVector getMassCenter() {
         if (!(strength>0)) return parent.pos;
-        Vector res = parent.pos.cmult(parent.mass);
+        PVector res = parent.pos.cmult(parent.mass);
         res.add(connected.getMassCenter().cmult(connected.getMass()*strength));
         res.div(parent.mass+connected.getMass()*strength);
         return res;

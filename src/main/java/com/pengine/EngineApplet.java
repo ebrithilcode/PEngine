@@ -8,7 +8,7 @@ import java.util.ArrayList;
 public class EngineApplet extends PApplet {
     public static PEngine engine;
     public static List<MethodListener> callback = new ArrayList<MethodListener>();
-    public static Vector size;
+    public static PVector size;
 
     //For different screen sizes;
     private float screenScale;

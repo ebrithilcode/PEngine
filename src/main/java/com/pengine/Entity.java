@@ -7,7 +7,6 @@ import com.pengine.components.Collider;
 import com.pengine.components.Component;
 import com.pengine.components.Connection;
 import com.pengine.components.AbstractRenderer;
-import processing.core.PVector;
 
 import static com.pengine.PEngine.APPLET;
 
@@ -17,8 +16,8 @@ public class Entity {
     List<Collider> colliders;
     List<AbstractRenderer> renderers;
 
-    public PVector position;
-    public PVector heading;
+    public processing.core.PVector position;
+    public processing.core.PVector heading;
     public float orientation;
 
     public float mass;
@@ -27,12 +26,12 @@ public class Entity {
     boolean isDead;
     float deltaTime;
 
-    public List<PVector> additionalForces;
+    public List<processing.core.PVector> additionalForces;
     public float maxRadius;
 
     Boundary bounds;
     //Bewegungen
-    Vector vel;
+    PVector vel;
     //Kreisofrequenz
     float omega;
     boolean lockRotation;
@@ -54,11 +53,11 @@ public class Entity {
 
     public GameObject() {
         components = new ArrayList<>();
-        pos = new Vector(0,0);
+        pos = new PVector(0,0);
         mass = 1;
         dead = false;
         friction = 0f;
-        vel = new Vector(0,0);
+        vel = new PVector(0,0);
         collisionEfficency = 1;
 
         collisionsDuringFrame = new ArrayList<>();
@@ -111,7 +110,7 @@ public class Entity {
         }
     }
 
-    public void addVelocity(Vector v) {
+    public void addVelocity(PVector v) {
         vel.add(v);
         for (Component c: components) {
             if (c instanceof Connection) {
@@ -119,7 +118,7 @@ public class Entity {
             }
         }
     }
-    public void addVelocityDiscret(Vector v) {
+    public void addVelocityDiscret(PVector v) {
         vel.add(v);
     }
     public void addAngularVelocity(float f) {
@@ -127,13 +126,13 @@ public class Entity {
             omega += f;
             for (Component c: components) {
                 if (c instanceof Connection) {
-                    ((Connection)c).apply(new Vector(0,0), 0);
+                    ((Connection)c).apply(new PVector(0,0), 0);
                 }
             }
         }
     }
 
-    public void shift(Vector v) {
+    public void shift(PVector v) {
         pos.add(v);
         // for (Component c: components) {
         //   if (c instanceof Connection) {
@@ -141,7 +140,7 @@ public class Entity {
         //   }
         // }
     }
-    public Vector getMassCenter() {
+    public PVector getMassCenter() {
         for (Component c: components) {
             if (c instanceof Connection) {
                 return ((Connection)c).getMassCenter();
@@ -165,7 +164,7 @@ public class Entity {
         }
     }
 
-    public boolean onCollision(Collider other, Vector out, Collider mine) {
+    public boolean onCollision(Collider other, PVector out, Collider mine) {
         mine.isColliding.add(other);
         collisionsDuringFrame.add(other);
         if (!mine.wasColliding.contains(other)) {
@@ -213,7 +212,7 @@ public class Entity {
 
     public void movement() {
         //Bewegung managen
-        pos.add(new Vector((vel.x * deltaTime), (vel.y * deltaTime)));
+        pos.add(new PVector((vel.x * deltaTime), (vel.y * deltaTime)));
         rot += omega * deltaTime;
         bounds = getBoundary();
         for (Component c: components) {
@@ -238,7 +237,7 @@ public class Entity {
         float right = pos.x + (vel.x>0 ? vel.x : 0) + maxRadius;
         float up = pos.y + (vel.y<0 ? vel.y : 0) - maxRadius;
         float down = pos.y + (vel.y>0 ? vel.y : 0) + maxRadius;
-        return new Boundary(new Vector(left,up), new Vector(right-left, down-up));
+        return new Boundary(new PVector(left,up), new PVector(right-left, down-up));
     }
 
 
@@ -249,7 +248,7 @@ public class Entity {
         //Skip class ID;
         index[0]++;
         g.objectID = index[0]++;
-        g.pos = Vector.createData(b, index);
+        g.pos = PVector.createData(b, index);
         int comNum = b[index[0]++];
         for (int i=0;i<comNum;i++) {
             g.components.add((Component) Component.createData(b, index));
@@ -278,7 +277,7 @@ public class Entity {
         if (b[index[0]+1] == pos.objectID)
             pos.updateData(b, index);
         else
-            pos = Vector.createData(b, index);
+            pos = PVector.createData(b, index);
 
         for (int i=0;i<b[index[0]++];i++) {
             if (b[index[0]+1] == components.get(i).objectID)

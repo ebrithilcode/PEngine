@@ -2,14 +2,13 @@ package com.pengine.components.renderers;
 
 import com.pengine.components.AbstractRenderer;
 import com.pengine.GameObject;
-import com.pengine.Vector;
 import processing.core.PImage;
 
 import static com.pengine.PEngine.APPLET;
 
 public class ImageRenderer extends AbstractRenderer {
 
-  Vector off;
+  PVector off;
   PImage img;
   /*color*/int c;
   boolean useColor;
@@ -17,7 +16,7 @@ public class ImageRenderer extends AbstractRenderer {
   public ImageRenderer(GameObject g) {
     super(g);
     useColor = false;
-    off = new Vector(0, 0);
+    off = new PVector(0, 0);
   }
 
   public void setImage(PImage img) {
@@ -29,7 +28,7 @@ public class ImageRenderer extends AbstractRenderer {
   }
 
   public void show() {
-    Vector pos = off.cadd(parent.pos);
+    PVector pos = off.cadd(parent.pos);
     APPLET.pushMatrix();
     APPLET.translate(pos.x, pos.y);
     APPLET.rotate(parent.rot);

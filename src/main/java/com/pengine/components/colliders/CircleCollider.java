@@ -1,36 +1,35 @@
 package com.pengine.components.colliders;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import com.pengine.Vector;
+
 import com.pengine.GameObject;
 import com.pengine.components.Collider;
 
 public class CircleCollider extends Collider {
 
-    Vector off;
+    PVector off;
     public float radius;
     CollisionDetectionSystem;
 
     {
-        off = new Vector(0,0);
-        globalPoints = new Vector[] {new Vector(0,0)};
+        off = new PVector(0,0);
+        globalPoints = new PVector[] {new PVector(0,0)};
     }
 
     public CircleCollider(GameObject g) {
         super(g);
     }
 
-    public List<Vector> collisionNormals(Collider other) {
-        List<Vector> ret = new ArrayList<>();
-        Vector norm1 = other.closestPoint(off.copy().add(parent.pos));
-        ret.add(new Vector(-norm1.y, norm1.x));
+    public List<PVector> collisionNormals(Collider other) {
+        List<PVector> ret = new ArrayList<>();
+        PVector norm1 = other.closestPoint(off.copy().add(parent.pos));
+        ret.add(new PVector(-norm1.y, norm1.x));
         return ret;
     }
 
-    public Vector closestPoint(Vector p) {
-        Vector diff = off.copy().add(parent.pos).sub(p);
+    public PVector closestPoint(PVector p) {
+        PVector diff = off.copy().add(parent.pos).sub(p);
         diff.setMag(diff.mag()-radius);
         return diff.add(p);
     }
@@ -52,13 +51,13 @@ public class CircleCollider extends Collider {
         parent.maxRadius = v;
     }
 
-    public void setOff(Vector v) {
+    public void setOff(PVector v) {
         off = v;
     }
     public float getRadius() {
         return radius;
     }
-    public Vector getOff() {
+    public PVector getOff() {
         return off;
     }
 }

@@ -35,7 +35,7 @@ public class QuadTree {
     sat = s;
     holdObjects = new ArrayList<GameObject>();
     children = new QuadTree[0];
-    room = new Boundary(new Vector(0,0), new Vector(APPLET.width, APPLET.height));
+    room = new Boundary(new PVector(0,0), new PVector(APPLET.width, APPLET.height));
     parent = p;
   }
 
@@ -59,9 +59,9 @@ public class QuadTree {
           children[i] = new QuadTree(this, sat);
         }
         children[0].room = new Boundary(room.pos, room.dim.cdiv(2));
-        children[1].room = new Boundary(room.pos.cadd(new Vector(room.dim.x/2f,0)), room.dim.cdiv(2));
-        children[2].room = new Boundary(room.pos.cadd(new Vector(room.dim.x/2f,room.dim.y/2f)), room.dim.cdiv(2));
-        children[3].room = new Boundary(room.pos.cadd(new Vector(0,room.dim.y/2f)), room.dim.cdiv(2));
+        children[1].room = new Boundary(room.pos.cadd(new PVector(room.dim.x/2f,0)), room.dim.cdiv(2));
+        children[2].room = new Boundary(room.pos.cadd(new PVector(room.dim.x/2f,room.dim.y/2f)), room.dim.cdiv(2));
+        children[3].room = new Boundary(room.pos.cadd(new PVector(0,room.dim.y/2f)), room.dim.cdiv(2));
       }
       for (QuadTree c: children) {
         if (c.room.contains(b)) {

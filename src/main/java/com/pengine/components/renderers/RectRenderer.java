@@ -2,14 +2,13 @@ package com.pengine.components.renderers;
 
 import com.pengine.components.AbstractRenderer;
 import com.pengine.GameObject;
-import com.pengine.Vector;
 
 import static com.pengine.PEngine.APPLET;
 
 public class RectRenderer extends AbstractRenderer {
 
-  Vector[] localPoints;
-  Vector[] globalPoints = new Vector[0];
+  PVector[] localPoints;
+  PVector[] globalPoints = new PVector[0];
   /*color*/public int c;
 
 
@@ -32,7 +31,7 @@ public class RectRenderer extends AbstractRenderer {
   public void show() {
     APPLET.fill(c);
     APPLET.beginShape();
-    for (Vector p: globalPoints) {
+    for (PVector p: globalPoints) {
       if (p!=null)
       APPLET.vertex(p.x, p.y);
     }
@@ -40,15 +39,15 @@ public class RectRenderer extends AbstractRenderer {
   }
 
   public void setPoints() {
-    globalPoints = new Vector[localPoints.length];
+    globalPoints = new PVector[localPoints.length];
     for (int i = 0;i<localPoints.length; i++) {
-      Vector help = localPoints[i].copy().add(parent.pos);
+      PVector help = localPoints[i].copy().add(parent.pos);
       help = rotateVector(help, parent.pos, parent.rot);
       globalPoints[i] = help;
     }
   }
 
-  public void setLocalPoints(Vector[] p) {
+  public void setLocalPoints(PVector[] p) {
     localPoints = p;
   }
 
@@ -71,9 +70,9 @@ public class RectRenderer extends AbstractRenderer {
     rr.objectID = index[0]++;
     rr.c = bytesToInt(subarray(b, index, 4));
     int len = b[index[0]++];
-    rr.localPoints = new Vector[len];
+    rr.localPoints = new PVector[len];
     for (int i=0;i<len;i++) {
-      rr.localPoints[i] = Vector.createData(b, index);
+      rr.localPoints[i] = PVector.createData(b, index);
     }
     return rr;
   }
@@ -84,16 +83,16 @@ public class RectRenderer extends AbstractRenderer {
     c = bytesToInt(subarray(b, index, 4));
     int len = b[index[0]++];
     if (localPoints.length!=len) {
-      localPoints = new Vector[len];
+      localPoints = new PVector[len];
       for (int i=0;i<localPoints.length;i++) {
-        localPoints[i] = new Vector();
+        localPoints[i] = new PVector();
       }
     }
     for (int i=0;i<len;i++) {
       if (b[index[0]+1] == localPoints[i].objectID)
         localPoints[i].updateData(b, index);
       else
-        localPoints[i] = Vector.createData(b, index);
+        localPoints[i] = PVector.createData(b, index);
     }
 
   }
