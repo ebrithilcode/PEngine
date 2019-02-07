@@ -25,16 +25,19 @@ public class ServerConnection extends Thread {
 
     public void run() {
         while (alive) {
+            int startTime = APPLET.millis();
             buildData();
             send();
+            APPLET.delay(APPLET.max(0, 17-(APPLET.millis()-startTime)));
         }
     }
     public void end() {
         alive = false;
     }
     private void send() {
+        System.out.println("Actually sending at second position: "+charToByte(myMessageToSend.toCharArray())[1]);
         myServer.write( charToByte( myMessageToSend.toCharArray() ));
-
+        System.out.println("I just wrote a bunch of data to my clients. Uf");
         Client mc = myServer.available();
         while (mc!=null) {
             byte[] received = mc.readBytesUntil('\r');
