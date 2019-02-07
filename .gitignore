@@ -1,4 +1,7 @@
 *.class
 *.iml
 /target/
+/classes/
+/libraries/
 /.idea/
+
