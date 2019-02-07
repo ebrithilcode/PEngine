@@ -19,6 +19,7 @@ public class RectRenderer extends AbstractRenderer {
 
   {
     dontSendMePlease = false;
+    alwaysCreateNew = true;
   }
 
   public RectRenderer() {}
@@ -98,7 +99,7 @@ public class RectRenderer extends AbstractRenderer {
       }
     }
     for (int i=0;i<len;i++) {
-      if (b[index[0]+1] == localPoints[i].objectID)
+      if (b[index[0]+1] == localPoints[i].objectID && !localPoints[i].alwaysCreateNew)
         localPoints[i].updateData(b, index);
       else
         localPoints[i] = Vector.createData(b, index);

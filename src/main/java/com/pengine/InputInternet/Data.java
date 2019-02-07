@@ -12,6 +12,7 @@ public class Data {
   public int objectID;
 
   public boolean dontSendMePlease = true;
+  public boolean alwaysCreateNew = false;
 
   public Data() {}
   Data(byte[] recData) {
@@ -27,6 +28,10 @@ public class Data {
   public void updateData(byte[] bytes, int[] index) {
     //Skip class and object id
     index[0] += 2;
+  }
+  public void setID(int v) {
+    objectID = v;
+    System.out.println("My ID is "+v);
   }
 
   @Override
@@ -94,7 +99,6 @@ public class Data {
         else if (c=='b') ret.add((byte)13);
         else if (c=='c') {
           ret.add((byte) '\n');
-          System.out.println("I found one n");
         }
       } else ret.add(b);
     }
@@ -105,7 +109,6 @@ public class Data {
     byte[] ret = new byte[list.size()];
     for (int i=0;i<list.size();i++) {
       ret[i] = list.get(i);
-      if (ret[i] == (int) '\n') System.out.println("Found one at: "+i);
     }
     return ret;
   }

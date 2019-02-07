@@ -9,7 +9,9 @@ public class Vector extends Data {
   public float y;
   public float z;
 
-
+  {
+    alwaysCreateNew = true;
+  }
   public Vector(){};
   public Vector(float x, float y) {
     this.x = x;
@@ -143,11 +145,8 @@ public class Vector extends Data {
     //Skip class ID
     index[0]++;
     v.objectID = b[index[0]++];
-    System.out.println("Index is at: "+index[0]);
     v.x = byteToFloat(subarray(b, index, 4));
-    System.out.println("Index is at: "+index[0]);
     v.y = byteToFloat(subarray(b, index, 4));
-    System.out.println("Index is at: "+index[0]);
     com.pengine.InputInternet.Data.nextWord(b, index);
     return v;
   }

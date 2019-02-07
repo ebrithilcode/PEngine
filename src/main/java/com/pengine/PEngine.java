@@ -80,8 +80,6 @@ public class PEngine {
       for (int i = 0; i < objects.size(); i++) {
         objects.get(i).render();
       }
-
-      System.out.println("Uhh looping at least?");
     //} catch (Exception e) { System.out.println(e); }
   }
   float getMaxSpeed() {
@@ -98,8 +96,7 @@ public class PEngine {
 
     //I dont know why i was checking for that though it creates a bunch of problems, will just comment it
     //if (g.objectID >0) {
-      g.objectID = uniqueObjId;
-      uniqueObjId++;
+      registerObject(g);
     //}
     boolean inserted = false;
       List<GameObject> objects = engineList.getObjects();
@@ -141,7 +138,7 @@ public class PEngine {
         return d;
     } catch (Exception e) {
       System.out.println("Damn: " + e.getCause());
-      if (e instanceof InvocationTargetException) System.out.println((InvocationTargetException)e.getCause());
+      //if (e instanceof InvocationTargetException) System.out.println((InvocationTargetException)e.getCause());
       try {
         Thread.sleep(500);
 
@@ -232,6 +229,11 @@ public class PEngine {
       } catch (Exception e) {System.out.println(e);}
     }
   }
+  public void registerObject(Data g) {
+    g.setID(uniqueObjId);
+    System.out.println("Registering object at "+g.objectID);
+    uniqueObjId++;
+  }
 
 
 
@@ -239,7 +241,12 @@ public class PEngine {
     bytes = Data.decodeBytes(bytes);
     int[] iterator = new int[] {0};
     while (iterator[0] < bytes.length-1) {
-      Data d = dataAlreadyExists(bytes[iterator[0]+1]);
+      int obIPos = iterator[0]+1;
+      System.out.println("Looking at: "+obIPos);
+      System.out.println("Prev: "+bytes[obIPos-1]);
+      System.out.println("act: "+bytes[obIPos]);
+      System.out.println("next: "+bytes[obIPos+1]);
+      Data d = dataAlreadyExists(bytes[obIPos]);
       if (d==null) {
         buildAndAddData(bytes, iterator, ip);
       } else {
@@ -249,7 +256,7 @@ public class PEngine {
   }
 
   Data dataAlreadyExists(int id) {
-    System.out.println("Looking for. "+id);
+    System.out.println("Looking for: "+id);
     for (Data d: engineList.getObjects()) {
       if (d.objectID == id) {
         System.out.println("Found: "+d.objectID);

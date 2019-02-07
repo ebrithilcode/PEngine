@@ -38,7 +38,6 @@ public class GameObject extends Data implements Updatable {
   public List<Collider> collisionsPreviousFrame;
 
   //Networking relevant
-  public int objectID = -1;
   public PEngine engine;
 
 
@@ -85,6 +84,7 @@ public class GameObject extends Data implements Updatable {
 
   public void addComponent(Component c) {
     components.add(c);
+    ENGINE.registerObject(c);
   }
 
   public void removeComponent(Class<? extends Component> cl) {
@@ -154,7 +154,8 @@ public class GameObject extends Data implements Updatable {
   public void render() {
     System.out.println("Rendering a gameObject with "+components.size() + " components");
     System.out.println("At position "+pos.x+"/"+pos.y);
-    for (Component c: components) {
+    for (int i=0;i<components.size();i++) {
+      Component c = components.get(i);
       if (c instanceof AbstractRenderer) {
         System.out.println("Hooray");
         ((AbstractRenderer)c).show();
@@ -183,6 +184,7 @@ public class GameObject extends Data implements Updatable {
   }
 
   public boolean earlyUpdate() {
+    System.out.println("my id is "+objectID);
     deltaTime = 1f/APPLET.frameRate;
     for (Component c: components) {
       c.earlyUpdate();
@@ -242,16 +244,17 @@ public class GameObject extends Data implements Updatable {
   //Data type methods:
 
   public static GameObject createData(byte[] b, int[] index) {
+    System.out.println("Creating gameObject");
     GameObject g = new GameObject();
     //Skip class ID;
     index[0]++;
     g.objectID = b[index[0]++];
     g.pos = Vector.createData(b, index);
+    g.rot = byteToFloat(subarray(b,index,4));
     int comNum = b[index[0]++];
     for (int i=0;i<comNum;i++) {
       Component c = (Component) ENGINE.createData(b, index, "I dont give a shit.com");
-      System.out.println("The circleRenderer i have in mind is named: "+c);
-      System.out.println("With a color of "+ ((com.pengine.components.renderers.CircleRenderer)c).c);
+      System.out.println("Id it has: "+c.objectID);
       c.parent = g;
       g.components.add(c);
     }
@@ -267,34 +270,52 @@ public class GameObject extends Data implements Updatable {
 
     ret += (char) classID;
     ret += (char) objectID;
+    System.out.println("Just attached: "+objectID);
     ret += pos.toString();
-    ret += (char) components.size();
+    ret = concateByteArray(ret, floatToByte(rot));
+    //Count sendable components
+    int sendable = 0;
+    String attachLater = "";
     for (int i=0;i<components.size();i++) {
-      ret += components.get(i).toString();
+      if (!components.get(i).dontSendMePlease) {
+        sendable++;
+        attachLater += components.get(i).toString();
+      }
     }
+    ret += (char) sendable;
+    ret += attachLater;
     ret += '\n';
 
     return ret;
   }
 
   public void updateData(byte[] b, int... index) {
+    System.out.println("Updating gameObject: "+this);
 
     //Skip class and object id
     index[0] += 2;
-    if (b[index[0]+1] == pos.objectID)
+    if (b[index[0]+1] == pos.objectID && !pos.alwaysCreateNew)
     pos.updateData(b, index);
     else
     pos = Vector.createData(b, index);
+
+    rot = byteToFloat(subarray(b, index, 4));
+
     int compsToAdd = b[index[0]++];
     for (int i=0;i<compsToAdd;i++) {
-      if (b[index[0]+1] == components.get(i).objectID)
+      System.out.println("The one before: "+b[index[0]-1]);
+      System.out.println("The one before: "+b[index[0]]);
+      System.out.println("Need: "+b[index[0]+1]+"/ got: "+components.get(i).objectID);
+      System.out.println("The one after: "+b[index[0]+1]);
+      if (b[index[0]+1] == components.get(i).objectID && !pos.alwaysCreateNew)
         components.get(i).updateData(b, index);
       else {
         Component c = (Component) ENGINE.createData(b, index, "I dont give a shit.com");
-        System.out.println("The circleRenderer i have in mind is named: "+c);
-        System.out.println("With a color of "+ ((com.pengine.components.renderers.CircleRenderer)c).c);
+        System.out.println("Id it has: "+c.objectID);
+        //c.objectID = b[index[0]+1];
+        //System.out.println("Assigned ID: "+c.objectID);
         c.parent = this;
-        components.add(c);
+        components.add(i,c);
       }
     }
     System.out.println("My vector is: "+pos.x);
