@@ -1,6 +1,7 @@
 package com.pengine.components;
 
 import com.pengine.GameObject;
+import processing.core.PVector;
 
 public class Connection extends Component {
 

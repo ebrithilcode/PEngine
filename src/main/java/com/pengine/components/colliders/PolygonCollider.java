@@ -2,6 +2,7 @@ package com.pengine.components.colliders;
 
 import com.pengine.GameObject;
 import com.pengine.components.Collider;
+import processing.core.PVector;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +17,7 @@ public class PolygonCollider extends Collider {
         super(g);
     }
 
-    public List<PVector> collisionNormals(Collider other) {
+    public List<PVector> getCollisionNormals(Collider other) {
         List<PVector> allCollisionNormals = new ArrayList<>();
         for (int i=0; i<globalPoints.length; i++) {
             PVector dist = globalPoints[i].csub(globalPoints[(i+1)%globalPoints.length]);

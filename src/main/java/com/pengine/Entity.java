@@ -7,6 +7,7 @@ import com.pengine.components.Collider;
 import com.pengine.components.Component;
 import com.pengine.components.Connection;
 import com.pengine.components.AbstractRenderer;
+import processing.core.PVector;
 
 import static com.pengine.PEngine.APPLET;
 
@@ -29,9 +30,10 @@ public class Entity {
     public List<processing.core.PVector> additionalForces;
     public float maxRadius;
 
-    Boundary bounds;
+    AABB bounds;
     //Bewegungen
     PVector vel;
+
     //Kreisofrequenz
     float omega;
     boolean lockRotation;

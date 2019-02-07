@@ -1,6 +1,8 @@
 package com.pengine;
 
 import processing.core.PApplet;
+import processing.core.PVector;
+
 import java.util.List;
 import java.util.ArrayList;
 

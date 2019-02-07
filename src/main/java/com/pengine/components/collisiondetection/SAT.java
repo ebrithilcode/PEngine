@@ -7,10 +7,11 @@ import java.util.List;
 import com.pengine.Collision;
 import com.pengine.components.Collider;
 import com.pengine.components.colliders.CircleCollider;
-import com.pengine.GameObject;
+import processing.core.PVector;
 
 import static com.pengine.PEngine.APPLET;
 
+@Deprecated
 public class SAT {
 
   List<Collision> collisions;
@@ -31,8 +32,8 @@ public class SAT {
     }
 
     //Mixed
-    Collection<PVector> c1Normals = c1.collisionNormals(c2);
-    Collection<PVector> c2Normals = c2.collisionNormals(c1);
+    Collection<PVector> c1Normals = c1.getCollisionNormals(c2);
+    Collection<PVector> c2Normals = c2.getCollisionNormals(c1);
 
     List<PVector> normals = new ArrayList<>();
     normals.addAll(c1Normals);

@@ -5,12 +5,12 @@ import java.util.List;
 
 import com.pengine.GameObject;
 import com.pengine.components.Collider;
+import processing.core.PVector;
 
 public class CircleCollider extends Collider {
 
     PVector off;
     public float radius;
-    CollisionDetectionSystem;
 
     {
         off = new PVector(0,0);
@@ -21,7 +21,7 @@ public class CircleCollider extends Collider {
         super(g);
     }
 
-    public List<PVector> collisionNormals(Collider other) {
+    public List<PVector> getCollisionNormals(Collider other) {
         List<PVector> ret = new ArrayList<>();
         PVector norm1 = other.closestPoint(off.copy().add(parent.pos));
         ret.add(new PVector(-norm1.y, norm1.x));

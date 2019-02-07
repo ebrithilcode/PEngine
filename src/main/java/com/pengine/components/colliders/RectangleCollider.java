@@ -5,14 +5,15 @@ import java.util.List;
 
 import com.pengine.GameObject;
 import com.pengine.components.Collider;
+import processing.core.PVector;
 
-public class RectCollider extends PolygonCollider {
-    public RectCollider(GameObject g) {
+public class RectangleCollider extends PolygonCollider {
+    public RectangleCollider(GameObject g) {
         super(g);
     }
 
     @Override
-    public List<PVector> collisionNormals(Collider other) {
+    public List<PVector> getCollisionNormals(Collider other) {
         List<PVector> ret = new ArrayList<PVector>();
         for (int i=0;i<2;i++) {
             PVector dist = globalPoints[i].csub(globalPoints[(i+1)]);
