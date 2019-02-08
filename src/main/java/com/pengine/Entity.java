@@ -123,6 +123,7 @@ public class Entity {
     public void addVelocityDiscret(PVector v) {
         vel.add(v);
     }
+
     public void addAngularVelocity(float f) {
         if (!lockRotation) {
             omega += f;
