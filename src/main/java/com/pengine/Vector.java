@@ -131,6 +131,7 @@ public class Vector extends Data {
     String ret = "";
     ret += (char) classID;
     ret += (char) objectID;
+    ret += (char) (dontUpdateMe ? 1 : 0);
     ret = concateByteArray(ret, floatToByte(x));
     ret = concateByteArray(ret, floatToByte(y));
     ret += '\n';
@@ -145,6 +146,7 @@ public class Vector extends Data {
     //Skip class ID
     index[0]++;
     v.objectID = b[index[0]++];
+    index[0]++;
     v.x = byteToFloat(subarray(b, index, 4));
     v.y = byteToFloat(subarray(b, index, 4));
     com.pengine.InputInternet.Data.nextWord(b, index);
@@ -155,7 +157,7 @@ public class Vector extends Data {
   public void updateData(byte[] b, int[] index) {
 
     //Skip class and object id
-    index[0] += 2;
+    index[0] += 3;
     x = byteToFloat(subarray(b, index, 4));
     y = byteToFloat(subarray(b, index, 4));
     com.pengine.InputInternet.Data.nextWord(b, index);

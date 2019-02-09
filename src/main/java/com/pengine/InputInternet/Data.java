@@ -13,6 +13,7 @@ public class Data {
 
   public boolean dontSendMePlease = true;
   public boolean alwaysCreateNew = false;
+  public boolean dontUpdateMe = false;
 
   public Data() {}
   Data(byte[] recData) {

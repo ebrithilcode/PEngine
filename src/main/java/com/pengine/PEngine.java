@@ -67,7 +67,6 @@ public class PEngine {
     qt.room.infinite = true;
     backgroundColor = APPLET.color(255);
 
-    System.out.println("Got a new QuadTree: "+qt);
     pt.start();
 
   }
@@ -77,6 +76,8 @@ public class PEngine {
       APPLET.background(backgroundColor);
 
       List<GameObject> objects = engineList.getObjects();
+
+    System.out.println("Current List. "+objects.size());
       for (int i = 0; i < objects.size(); i++) {
         objects.get(i).render();
       }
@@ -111,11 +112,26 @@ public class PEngine {
     g.setup();
     qt.sortIn(g);
   }
+  public void addObjectSilently(GameObject g) {
+    boolean inserted = false;
+    List<GameObject> objects = engineList.getObjects();
+    for (int i=0;i<objects.size();i++) {
+      if (objects.get(i).renderingPriority > g.renderingPriority) {
+        engineList.addObject(i, g);
+        inserted = true;
+        break;
+      }
+    }
+    if (!inserted) objects.add(g);
+    g.setup();
+    qt.sortIn(g);
+  }
   protected void buildAndAddData(byte[] bytes, int[] iterator, String ip) {
+
     Data d = createData(bytes, iterator, ip);
     if (d!=null) {
       if (d instanceof GameObject) {
-        addObject((GameObject) d);
+        addObjectSilently((GameObject) d);
         System.out.println("Adding an object to the qeue");
       }
       else if (d instanceof Input) engineList.addInput((Input) d);
@@ -126,14 +142,12 @@ public class PEngine {
   public Data createData(byte[] bytes, int[] iterator, String ip) {
     try {
         int num = (int) bytes[iterator[0]];
-        System.out.println("Need the key: "+num);
 
         Class c = idToClass.get(num);
         System.out.println("Class: "+c);
         java.lang.reflect.Method m = c.getMethod("createData", byte[].class, int[].class);
         System.out.println("Method: "+m);
         Data d = (Data) m.invoke(null, bytes, iterator);
-        System.out.println("Data: "+d);
         d.ip = ip;
         return d;
     } catch (Exception e) {
@@ -242,12 +256,9 @@ public class PEngine {
     int[] iterator = new int[] {0};
     while (iterator[0] < bytes.length-1) {
       int obIPos = iterator[0]+1;
-      System.out.println("Looking at: "+obIPos);
-      System.out.println("Prev: "+bytes[obIPos-1]);
-      System.out.println("act: "+bytes[obIPos]);
-      System.out.println("next: "+bytes[obIPos+1]);
       Data d = dataAlreadyExists(bytes[obIPos]);
       if (d==null) {
+        System.out.println("Creating a new GameObejct");
         buildAndAddData(bytes, iterator, ip);
       } else {
         d.updateData(bytes, iterator);

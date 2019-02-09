@@ -30,7 +30,7 @@ public class ClientConnection extends Thread {
             int startTime = APPLET.millis();
             buildMessage();
             listen();
-            APPLET.delay(APPLET.max(0, 17-(APPLET.millis()-startTime)));
+            APPLET.delay(APPLET.max(0, 5-(APPLET.millis()-startTime)));
         }
     }
 

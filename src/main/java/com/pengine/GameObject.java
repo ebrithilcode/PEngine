@@ -152,12 +152,10 @@ public class GameObject extends Data implements Updatable {
     return mass;
   }
   public void render() {
-    System.out.println("Rendering a gameObject with "+components.size() + " components");
-    System.out.println("At position "+pos.x+"/"+pos.y);
+    System.out.println("I have "+components.size()+" components");
     for (int i=0;i<components.size();i++) {
       Component c = components.get(i);
       if (c instanceof AbstractRenderer) {
-        System.out.println("Hooray");
         ((AbstractRenderer)c).show();
       }
     }
@@ -184,9 +182,9 @@ public class GameObject extends Data implements Updatable {
   }
 
   public boolean earlyUpdate() {
-    System.out.println("my id is "+objectID);
     deltaTime = 1f/APPLET.frameRate;
-    for (Component c: components) {
+    for (int i = 0;i<components.size();i++) {
+      Component c = components.get(i);
       c.earlyUpdate();
     }
     collisionsPreviousFrame = new ArrayList<>(collisionsDuringFrame);
@@ -197,14 +195,16 @@ public class GameObject extends Data implements Updatable {
   }
 
   public boolean update() {
-    for (Component c: components) {
+    for (int i = 0;i<components.size();i++) {
+      Component c = components.get(i);
       c.update();
     }
     return false;
   }
 
   public boolean lateUpdate() {
-    for (Component c: components) {
+    for (int i = 0;i<components.size();i++) {
+      Component c = components.get(i);
       c.lateUpdate();
     }
     return false;
@@ -215,7 +215,8 @@ public class GameObject extends Data implements Updatable {
     pos.add(new Vector((vel.x * deltaTime), (vel.y * deltaTime)));
     rot += omega * deltaTime;
     bounds = getBoundary();
-    for (Component c: components) {
+    for (int i = 0;i<components.size();i++) {
+      Component c = components.get(i);
       c.movement();
     }
   }
@@ -249,16 +250,15 @@ public class GameObject extends Data implements Updatable {
     //Skip class ID;
     index[0]++;
     g.objectID = b[index[0]++];
+    index[0]++;
     g.pos = Vector.createData(b, index);
     g.rot = byteToFloat(subarray(b,index,4));
     int comNum = b[index[0]++];
     for (int i=0;i<comNum;i++) {
       Component c = (Component) ENGINE.createData(b, index, "I dont give a shit.com");
-      System.out.println("Id it has: "+c.objectID);
       c.parent = g;
       g.components.add(c);
     }
-    System.out.println("My vector is: "+g.pos.x);
     Data.nextWord(b, index);
     return g;
   }
@@ -270,7 +270,7 @@ public class GameObject extends Data implements Updatable {
 
     ret += (char) classID;
     ret += (char) objectID;
-    System.out.println("Just attached: "+objectID);
+    ret += (char) (dontUpdateMe ? 1 : 0);
     ret += pos.toString();
     ret = concateByteArray(ret, floatToByte(rot));
     //Count sendable components
@@ -290,35 +290,42 @@ public class GameObject extends Data implements Updatable {
   }
 
   public void updateData(byte[] b, int... index) {
-    System.out.println("Updating gameObject: "+this);
 
     //Skip class and object id
-    index[0] += 2;
-    if (b[index[0]+1] == pos.objectID && !pos.alwaysCreateNew)
-    pos.updateData(b, index);
-    else
-    pos = Vector.createData(b, index);
+    index[0] += 3;
 
+
+    if (b[index[0]+1] == pos.objectID && !pos.alwaysCreateNew) {
+      if (b[index[0]+2] == 0)
+        pos.updateData(b, index);
+      else
+        Data.nextWord(b, index);
+    } else {
+      pos = Vector.createData(b, index);
+    }
     rot = byteToFloat(subarray(b, index, 4));
-
+    System.out.println("New position is " + pos.x);
     int compsToAdd = b[index[0]++];
+    System.out.println("Waiting for: "+compsToAdd + " Components");
     for (int i=0;i<compsToAdd;i++) {
-      System.out.println("The one before: "+b[index[0]-1]);
-      System.out.println("The one before: "+b[index[0]]);
-      System.out.println("Need: "+b[index[0]+1]+"/ got: "+components.get(i).objectID);
-      System.out.println("The one after: "+b[index[0]+1]);
-      if (b[index[0]+1] == components.get(i).objectID && !pos.alwaysCreateNew)
-        components.get(i).updateData(b, index);
-      else {
-        Component c = (Component) ENGINE.createData(b, index, "I dont give a shit.com");
-        System.out.println("Id it has: "+c.objectID);
-        //c.objectID = b[index[0]+1];
-        //System.out.println("Assigned ID: "+c.objectID);
-        c.parent = this;
-        components.add(i,c);
+      Component c = alreadyContained(b[index[0]+1]);
+      if (c != null && !c.alwaysCreateNew) {
+        //if (b[index[0]+2]==0)
+          c.updateData(b, index);
+        //else
+        //  Data.nextWord(b, index);
+      } else {
+        addComponent((Component) ENGINE.createData(b, index, "No shit sherlock"));
       }
     }
-    System.out.println("My vector is: "+pos.x);
+    System.out.println("Now I have "+components.size() + " Components");
     Data.nextWord(b, index);
+  }
+
+  Component alreadyContained(int id) {
+    for (int i=0;i<components.size();i++) {
+      if (components.get(i).objectID == id) return components.get(i);
+    }
+    return null;
   }
 }
