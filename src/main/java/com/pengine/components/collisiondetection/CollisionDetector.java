@@ -1,7 +1,7 @@
 package com.pengine.components.collisiondetection;
 
 import com.pengine.Collision;
-import com.pengine.components.Collider;
+import com.pengine.components.colliders.Collider;
 
 public interface CollisionDetector<T extends Collider, S extends Collider> {
 

@@ -1,7 +1,7 @@
 package com.pengine;
 
 import static com.pengine.PEngine.APPLET;
-import com.pengine.components.Collider;
+import com.pengine.components.colliders.Collider;
 import processing.core.PVector;
 
 public class Collision {

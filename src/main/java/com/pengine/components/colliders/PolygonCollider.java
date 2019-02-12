@@ -1,7 +1,6 @@
 package com.pengine.components.colliders;
 
 import com.pengine.GameObject;
-import com.pengine.components.Collider;
 import processing.core.PVector;
 
 import java.util.ArrayList;
@@ -11,7 +10,7 @@ import static com.pengine.PEngine.APPLET;
 
 public class PolygonCollider extends Collider {
 
-    public PVector[] localPoints;
+    public PVector[] relativeVertices;
 
     public PolygonCollider(GameObject g) {
         super(g);
@@ -24,6 +23,11 @@ public class PolygonCollider extends Collider {
             allCollisionNormals.add(new PVector(-dist.y, dist.x));
         }
         return allCollisionNormals;
+    }
+
+    @Override
+    public String getIdentifier() {
+        return "POLYGON";
     }
 
     public PVector closestPoint(PVector p) {

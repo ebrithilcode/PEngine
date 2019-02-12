@@ -5,7 +5,7 @@ import java.util.Collection;
 import java.util.List;
 
 import com.pengine.Collision;
-import com.pengine.components.Collider;
+import com.pengine.components.colliders.Collider;
 import com.pengine.components.colliders.CircleCollider;
 import processing.core.PVector;
 

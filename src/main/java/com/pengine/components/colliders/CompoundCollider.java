@@ -1,7 +1,6 @@
 package com.pengine.components.colliders;
 
 import com.pengine.Entity;
-import com.pengine.components.Collider;
 import processing.core.PVector;
 
 import java.util.List;
@@ -22,4 +21,8 @@ public class CompoundCollider<T extends Collider> extends Collider {
         return null;
     }
 
+    @Override
+    public String getIdentifier() {
+        return "COMPOUND";
+    }
 }

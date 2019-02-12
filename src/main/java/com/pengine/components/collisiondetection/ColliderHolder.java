@@ -1,6 +1,6 @@
 package com.pengine.components.collisiondetection;
 
-import com.pengine.components.Collider;
+import com.pengine.components.colliders.Collider;
 
 import java.util.Collection;
 
