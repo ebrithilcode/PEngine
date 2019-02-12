@@ -1,10 +1,7 @@
-package com.pengine.components.colliders;
+package com.pengine.collisiondetection.colliders;
 
 import com.pengine.Entity;
 import processing.core.PVector;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public abstract class Collider{
 

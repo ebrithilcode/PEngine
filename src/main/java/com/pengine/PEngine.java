@@ -1,6 +1,7 @@
 package com.pengine;
 
-import com.pengine.components.collisiondetection.SAT;
+import com.pengine.collisiondetection.SAT;
+import com.pengine.collisiondetection.holderimpl.QuadTree;
 import processing.core.PApplet;
 
 import java.util.ArrayList;
@@ -12,7 +13,7 @@ import com.pengine.InputInternet.ServerConnection;
 import com.pengine.InputInternet.Input;
 import com.pengine.InputInternet.Data;
 import com.pengine.components.Collider;
-import com.pengine.components.renderers.*;
+import com.pengine.rendering.renderers.*;
 import processing.core.PVector;
 
 public class PEngine {

@@ -1,7 +1,4 @@
-package com.pengine.components.colliders;
-
-import java.util.ArrayList;
-import java.util.List;
+package com.pengine.collisiondetection.colliders;
 
 import com.pengine.Entity;
 import processing.core.PVector;

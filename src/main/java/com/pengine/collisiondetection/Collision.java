@@ -1,8 +1,9 @@
-package com.pengine;
+package com.pengine.collisiondetection;
+
+import com.pengine.collisiondetection.colliders.Collider;
+import processing.core.PVector;
 
 import static com.pengine.PEngine.APPLET;
-import com.pengine.components.colliders.Collider;
-import processing.core.PVector;
 
 public class Collision {
 
@@ -11,8 +12,6 @@ public class Collision {
   Collider c2;
   PVector out2;
   PVector collisionPoint;
-  GameObject g1;
-  GameObject g2;
 
   //Mass specific
   PVector mp1;
@@ -32,6 +31,10 @@ public class Collision {
     c2 = p2;
     out2 = o;
     collisionPoint = c;
+  }
+
+  public Collision reverse() {
+    return new Collision(c2, c1, PVector.mult(out2, -1), collisionPoint);
   }
 
   public void resolve() {
@@ -156,10 +159,10 @@ public class Collision {
 
   protected float calculateBot() {
     float sum = 0;
-    sum += m1<0?0:1/m1;
-    sum += m2<0?0:1/m2;
-    minertia1Inv = m1<0?0:1/(m1*APPLET.pow(ra.mag(),2));
-    minertia2Inv = m2<0?0:1/(m2*APPLET.pow(rb.mag(),2));
+    sum += m1<0 ? 0 : 1/m1;
+    sum += m2<0 ? 0 : 1/m2;
+    minertia1Inv = m1<0 ? 0 : 1/(m1*APPLET.pow(ra.mag(),2));
+    minertia2Inv = m2<0 ? 0 : 1/(m2*APPLET.pow(rb.mag(),2));
     sum += ra.cross(norm).dot(ra.cross(norm)) * minertia1Inv;
     sum += rb.cross(norm).dot(rb.cross(norm)) * minertia2Inv;
     return sum;

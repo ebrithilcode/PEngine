@@ -1,4 +1,4 @@
-package com.pengine.components.colliders;
+package com.pengine.collisiondetection.colliders;
 
 import java.util.ArrayList;
 import java.util.List;

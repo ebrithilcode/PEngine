@@ -1,4 +1,4 @@
-package com.pengine.components.renderers;
+package com.pengine.rendering.renderers;
 
 import com.pengine.components.AbstractRenderer;
 import com.pengine.GameObject;

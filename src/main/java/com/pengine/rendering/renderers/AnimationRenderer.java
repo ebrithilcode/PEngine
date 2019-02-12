@@ -1,5 +1,6 @@
-package com.pengine.components.renderers;
+package com.pengine.rendering.renderers;
 
+import com.pengine.Entity;
 import com.pengine.components.AbstractRenderer;
 import com.pengine.GameObject;
 import processing.core.PImage;
@@ -16,7 +17,7 @@ public class AnimationRenderer extends AbstractRenderer {
   Animation current;
   boolean mirror = false;
 
-  public AnimationRenderer(GameObject g) {
+  public AnimationRenderer(Entity g) {
     super(g);
     animations = new ArrayList<>();
   }

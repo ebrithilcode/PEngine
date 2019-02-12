@@ -1,12 +1,11 @@
-package com.pengine.components.collisiondetection;
+package com.pengine.collisiondetection;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import com.pengine.Collision;
-import com.pengine.components.colliders.Collider;
-import com.pengine.components.colliders.CircleCollider;
+import com.pengine.collisiondetection.colliders.Collider;
+import com.pengine.collisiondetection.colliders.CircleCollider;
 import processing.core.PVector;
 
 import static com.pengine.PEngine.APPLET;

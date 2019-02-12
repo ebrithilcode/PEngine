@@ -1,7 +1,7 @@
-package com.pengine.components.collisiondetection;
+package com.pengine.collisiondetection;
 
-import com.pengine.Collision;
-import com.pengine.components.colliders.*;
+import com.pengine.collisiondetection.colliders.*;
+import com.pengine.collisiondetection.collisiondetectors.CollisionDetector;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -12,9 +12,9 @@ import java.util.Map;
 public class CollisionDetectionSystem {
 
     Map<Class<? extends Collider>, Map<Class<? extends Collider>, CollisionDetector<? extends Collider, ? extends Collider>>> detectors;
-    ColliderHolder holder;
+    Iterable<List<? extends Collider>> holder;
 
-    private CollisionDetectionSystem(ColliderHolder holder, Map<Class<? extends Collider>, Map<Class<? extends Collider>, CollisionDetector<? extends Collider, ? extends Collider>>> detectors) {
+    private CollisionDetectionSystem(Iterable<List<? extends Collider>> holder, Map<Class<? extends Collider>, Map<Class<? extends Collider>, CollisionDetector<? extends Collider, ? extends Collider>>> detectors) {
         this.holder = holder;
         this.detectors = detectors;
     }
@@ -34,19 +34,19 @@ public class CollisionDetectionSystem {
         detectors.get(genericTypes[0]).put((Class<? extends Collider>) genericTypes[1], detector);
     }
 
-    /*public void manageCollisions() {
+    public void manageCollisions() {
         for(List<? extends Collider> colliderList : holder) {
             for(int i=0; i<colliderList.size(); i++) {
                 for(int k=i+1; k<colliderList.size(); k++) {
                     Collision collision = getCollision(colliderList.get(i), colliderList.get(k));
                     if(collision != null) {
                         colliderList.get(i).onCollide(collision);
-                        colliderList.get(k).onCollide(collision);
+                        colliderList.get(k).onCollide(collision.reverse());
                     }
                 }
             }
         }
-    }*/
+    }
     
     @SuppressWarnings({"unchecked", "Duplicates"})
     private Collision getCollision(Collider a, Collider b) {
@@ -73,7 +73,8 @@ public class CollisionDetectionSystem {
                             return null;
                         }
                     }
-                    return detector.getCollision(b, a);
+                    // ?
+                    return detector.getCollision(b, a).reverse();
                 }
                 System.err.println("Collision Manager had to fall back to superclass of Collider: "+a.getClass().getSimpleName()+". Try not to use Colliders of a type that you dont specify a CollisionChecker for.");
                 CollisionDetector detector = detectorMap.get(b.getClass());
@@ -98,7 +99,8 @@ public class CollisionDetectionSystem {
                 }
                 System.err.println("Collision Manager had to fall back to superclass of Collider: "+a.getClass().getSimpleName()+". Try not to use Colliders of a type that you dont specify a CollisionChecker for.");
             }
-            return detector.getCollision(b, a);
+            // ?
+            return detector.getCollision(b, a).reverse();
         }
         CollisionDetector detector = detectorMap.get(b.getClass());
         if(detector == null) {
@@ -116,14 +118,14 @@ public class CollisionDetectionSystem {
     public static class Builder {
 
         private static Map<Class<? extends Collider>, Map<Class<? extends Collider>, CollisionDetector<?, ?>>> buildDetectors;
-        private static ColliderHolder buildColliderHolder;
+        private static Iterable<List<? extends Collider>> buildColliderHolder;
 
         static {
             buildDetectors = new HashMap<>();
             buildColliderHolder = null;
         }
 
-        public static void setColliderHolder(ColliderHolder colliderHolder) {
+        public static void setColliderHolder(Iterable<List<? extends Collider>> colliderHolder) {
             buildColliderHolder = colliderHolder;
         }
 

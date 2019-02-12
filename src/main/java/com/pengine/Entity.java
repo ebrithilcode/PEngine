@@ -3,7 +3,7 @@ package com.pengine;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.pengine.components.colliders.Collider;
+import com.pengine.collisiondetection.colliders.Collider;
 import com.pengine.components.Component;
 import com.pengine.components.Connection;
 import com.pengine.components.AbstractRenderer;

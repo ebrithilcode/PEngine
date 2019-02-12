@@ -1,9 +1,9 @@
-package com.pengine.components.collisiondetection;
+package com.pengine.collisiondetection.collisiondetectors;
 
-import com.pengine.Collision;
-import com.pengine.components.colliders.CircleCollider;
-import com.pengine.components.colliders.PolygonCollider;
-import com.pengine.components.colliders.RectangleCollider;
+import com.pengine.collisiondetection.Collision;
+import com.pengine.collisiondetection.colliders.CircleCollider;
+import com.pengine.collisiondetection.colliders.PolygonCollider;
+import com.pengine.collisiondetection.colliders.RectangleCollider;
 import processing.core.PVector;
 
 
