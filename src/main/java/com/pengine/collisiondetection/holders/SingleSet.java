@@ -40,7 +40,7 @@ public class SingleSet implements IColliderHolder {
     }
 
     @Override
-    public Iterator<AbstractCollider> getAllColliders(AbstractCollider collider) {
+    public Iterator<AbstractCollider> getAllColliders() {
         return colliders.iterator();
     }
 
