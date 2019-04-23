@@ -1,6 +1,7 @@
 package com.pengine.collisiondetection.holders;
 
 import com.pengine.collisiondetection.colliders.AbstractCollider;
+import com.pengine.collisiondetection.colliders.ICollider;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -35,12 +36,12 @@ public class SingleSet implements IColliderHolder {
     }
 
     @Override
-    public Iterator<AbstractCollider> iteratorOfCollidersFor(AbstractCollider collider) {
+    public Iterator<ICollider> iteratorOfCollidersFor(AbstractCollider collider) {
         return colliders.iterator();
     }
 
     @Override
-    public Iterator<AbstractCollider> getAllColliders() {
+    public Iterator<ICollider> getAllColliders() {
         return colliders.iterator();
     }
 

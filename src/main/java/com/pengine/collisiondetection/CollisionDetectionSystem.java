@@ -1,175 +1,158 @@
 package com.pengine.collisiondetection;
 
-import com.pengine.collisiondetection.colliders.*;
-import com.pengine.collisiondetection.collisiondetectors.CollisionDetector;
+import com.pengine.collisiondetection.colliders.AbstractCollider;
+import com.pengine.collisiondetection.detectors.ICollisionDetector;
+import com.pengine.collisiondetection.holders.IColliderHolder;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 public class CollisionDetectionSystem {
 
-    Map<Class<? extends Collider>, Map<Class<? extends Collider>, CollisionDetector<? extends Collider, ? extends Collider>>> detectors;
-    Iterable<List<? extends Collider>> holder;
+    private Map<Class<? extends AbstractCollider>, Map<Class<? extends AbstractCollider>, ICollisionDetector<? extends AbstractCollider, ? extends AbstractCollider>>> detectors;
+    private IColliderHolder colliderHolder;
 
-    private CollisionDetectionSystem(Iterable<List<? extends Collider>> holder, Map<Class<? extends Collider>, Map<Class<? extends Collider>, CollisionDetector<? extends Collider, ? extends Collider>>> detectors) {
-        this.holder = holder;
+    private CollisionDetectionSystem(IColliderHolder colliderHolder, Map<Class<? extends AbstractCollider>, Map<Class<? extends AbstractCollider>, ICollisionDetector<? extends AbstractCollider, ? extends AbstractCollider>>> detectors) {
+        this.colliderHolder = colliderHolder;
         this.detectors = detectors;
     }
 
+    public boolean addCollider(AbstractCollider collider) {
+        return colliderHolder.add(collider);
+    }
+
+    public boolean removeCollider(AbstractCollider collider) {
+        return colliderHolder.remove(collider);
+    }
+
     @SuppressWarnings("unchecked")
-    public void addCollisionDetector(CollisionDetector detector) {
+    public void registerCollisionDetector(ICollisionDetector detector) {
         Type[] genericTypes = ((ParameterizedType) detector.getClass().getGenericInterfaces()[0]).getActualTypeArguments();
         
-        //check for overwrite
+        //check for overwrite of already existing ICollisionDetector in map
         if(detectors.get(genericTypes[0]) != null) {
             if(detectors.get(genericTypes[0]).get(genericTypes[1]) != null) {
-                System.err.format("CollisionDetector for Collider types %s and %s was overwritten. Ignore if this is on purpose.", ((Class<?>) genericTypes[0]).getSimpleName(), ((Class<?>) genericTypes[1]).getSimpleName());
+                System.err.format("ICollisionDetector for AbstractCollider types %s and %s was overwritten. Ignore if this is on purpose.", ((Class<?>) genericTypes[0]).getSimpleName(), ((Class<?>) genericTypes[1]).getSimpleName());
             }
         }
             
-        detectors.put((Class<? extends Collider>) genericTypes[0], new HashMap<Class<? extends Collider>, CollisionDetector<? extends Collider, ? extends Collider>>());
-        detectors.get(genericTypes[0]).put((Class<? extends Collider>) genericTypes[1], detector);
+        detectors.put((Class<? extends AbstractCollider>) genericTypes[0], new HashMap<Class<? extends AbstractCollider>, ICollisionDetector<? extends AbstractCollider, ? extends AbstractCollider>>());
+        detectors.get(genericTypes[0]).put((Class<? extends AbstractCollider>) genericTypes[1], detector);
     }
 
-    public void manageCollisions() {
-        for(List<? extends Collider> colliderList : holder) {
-            for(int i=0; i<colliderList.size(); i++) {
-                for(int k=i+1; k<colliderList.size(); k++) {
-                    Collision collision = getCollision(colliderList.get(i), colliderList.get(k));
-                    if(collision != null) {
-                        colliderList.get(i).onCollide(collision);
-                        colliderList.get(k).onCollide(collision.reverse());
-                    }
-                }
+    public void addCollisionDetectorsFromInnerClasses(Class<?> outerClass) {
+        Class<?>[] innerClasses = outerClass.getDeclaredClasses();
+        for(Class <?> c : innerClasses) {
+            if(!ICollisionDetector.class.isAssignableFrom(c)) {
+                System.err.format("Subclass %s in class %s does not implement the ICollisionDetector interface: Skipped.", c.getSimpleName(), outerClass.getSimpleName());
+                continue;
+            }
+            try {
+                registerCollisionDetector((ICollisionDetector) c.newInstance());
+            }
+            catch(IllegalAccessException e) {
+                System.err.format("Access modifier of the standard constructor in every subclass has to be public: Could not register subclass %s in class %s.", c.getSimpleName(), outerClass.getSimpleName());
+            }
+            catch(InstantiationException e) {
+                System.err.format("Instantiation of subclass %s in class %s failed. This might be due to a missing standard constructor in this subclass or an exception thrown by it.", c.getSimpleName(), outerClass.getSimpleName());
+                e.printStackTrace();
             }
         }
     }
-    
+
+    public void manageCollisions() {
+        Set<AbstractCollider> checkedColliders = new HashSet<>();
+        for(Iterator<AbstractCollider> colliderIterator = colliderHolder.getAllColliders(); colliderIterator.hasNext();) {
+            AbstractCollider current = colliderIterator.next();
+            if(current.isDead()) {
+                colliderIterator.remove();
+                continue;
+            }
+            checkedColliders.add(current);
+            for(Iterator<AbstractCollider> possibleIterator = colliderHolder.iteratorOfCollidersFor(current); possibleIterator.hasNext();) {
+                AbstractCollider possibleCollider = possibleIterator.next();
+                if(possibleCollider.isDead()) {
+                    possibleIterator.remove();
+                }
+                else if(!checkedColliders.contains(possibleCollider)) {
+                    Collision collision = getCollision(current, possibleCollider);
+                    if(collision != null) collision.notifyColliderOwners();
+                }
+
+            }
+        }
+    }
+
+    //eventhough this seems like complete spaghetti, in theory this should not be that inefficient,
+    //since in most cases most of the if/else stuff wont even be checked. Might still be optimizable, though.
     @SuppressWarnings({"unchecked", "Duplicates"})
-    private Collision getCollision(Collider a, Collider b) {
-        Map<Class<? extends Collider>, CollisionDetector<?, ?>> detectorMap = detectors.get(a.getClass());
+    private Collision getCollision(AbstractCollider a, AbstractCollider b) {
+        Map<Class<? extends AbstractCollider>, ICollisionDetector<?, ?>> detectorMap = detectors.get(a.getClass());
         if(detectorMap == null) {
             detectorMap = detectors.get(b.getClass());
             if(detectorMap == null) {
                 Class<?> superClass = a.getClass().getSuperclass();
-                if(Collider.class.isAssignableFrom(superClass)) detectorMap = detectors.get(superClass);
+                if(AbstractCollider.class.isAssignableFrom(superClass)) detectorMap = detectors.get(superClass);
                 if(detectorMap == null) {
                     superClass = b.getClass().getSuperclass();
-                    if(Collider.class.isAssignableFrom(superClass)) detectorMap = detectors.get(superClass);
+                    if(AbstractCollider.class.isAssignableFrom(superClass)) detectorMap = detectors.get(superClass);
                     if(detectorMap == null) {
-                        System.err.println("No entries for the Collider types: " + a.getClass().getSimpleName() + " and " + b.getClass().getSimpleName() + " were found nor for their superclasses. Dont't use Colliders of a type that you don't specify a CollisionChecker for.");
+                        System.err.println("No entries for the AbstractCollider types: " + a.getClass().getSimpleName() + " and " + b.getClass().getSimpleName() + " were found nor for their superclasses. Dont't use Colliders of a type that you don't specify a CollisionChecker for.");
                         return null;
                     }
-                    System.err.println("Collision Manager had to fall back to superclass of Collider: "+b.getClass().getSimpleName()+". Try not to use Colliders of a type that you dont specify a CollisionChecker for.");
-                    CollisionDetector detector = detectorMap.get(a.getClass());
+                    System.err.println("Collision Manager had to fall back to superclass of AbstractCollider: "+b.getClass().getSimpleName()+". Try not to use Colliders of a type that you dont specify a CollisionChecker for.");
+                    ICollisionDetector detector = detectorMap.get(a.getClass());
                     if(detector == null) {
                         superClass = a.getClass().getSuperclass();
-                        if(Collider.class.isAssignableFrom(superClass)) detector = detectorMap.get(superClass);
+                        if(AbstractCollider.class.isAssignableFrom(superClass)) detector = detectorMap.get(superClass);
                         if(detector == null) {
-                            System.err.println("No entries for the Collider types: " + a.getClass().getSimpleName() + " and " + b.getClass().getSimpleName() + " were found nor for their superclasses. Dont't use Colliders of a type that you don't specify a CollisionChecker for.");
+                            System.err.println("No entries for the AbstractCollider types: " + a.getClass().getSimpleName() + " and " + b.getClass().getSimpleName() + " were found nor for their superclasses. Dont't use Colliders of a type that you don't specify a CollisionChecker for.");
                             return null;
                         }
                     }
-                    // ?
-                    return detector.getCollision(b, a).reverse();
+                    return detector.getCollision(b, a);
                 }
-                System.err.println("Collision Manager had to fall back to superclass of Collider: "+a.getClass().getSimpleName()+". Try not to use Colliders of a type that you dont specify a CollisionChecker for.");
-                CollisionDetector detector = detectorMap.get(b.getClass());
+                System.err.println("Collision Manager had to fall back to superclass of AbstractCollider: "+a.getClass().getSimpleName()+". Try not to use Colliders of a type that you dont specify a CollisionChecker for.");
+                ICollisionDetector detector = detectorMap.get(b.getClass());
                 if(detector == null) {
                     superClass = b.getClass().getSuperclass();
-                    if(Collider.class.isAssignableFrom(superClass)) detector = detectorMap.get(superClass);
+                    if(AbstractCollider.class.isAssignableFrom(superClass)) detector = detectorMap.get(superClass);
                     if(detector == null) {
-                        System.err.println("No entries for the Collider types: " + a.getClass().getSimpleName() + " and " + b.getClass().getSimpleName() + " were found nor for their superclasses. Dont't use Colliders of a type that you don't specify a CollisionChecker for.");
+                        System.err.println("No entries for the AbstractCollider types: " + a.getClass().getSimpleName() + " and " + b.getClass().getSimpleName() + " were found nor for their superclasses. Dont't use Colliders of a type that you don't specify a CollisionChecker for.");
                         return null;
                     }
-                    System.err.println("Collision Manager had to fall back to superclass of Collider: "+b.getClass().getSimpleName()+". Try not to use Colliders of a type that you dont specify a CollisionChecker for.");
+                    System.err.println("Collision Manager had to fall back to superclass of AbstractCollider: "+b.getClass().getSimpleName()+". Try not to use Colliders of a type that you dont specify a CollisionChecker for.");
                 }
                 return detector.getCollision(a, b);
             }
-            CollisionDetector detector = detectorMap.get(a.getClass());
+            ICollisionDetector detector = detectorMap.get(a.getClass());
             if(detector == null) {
                 Class<?> superClass = a.getClass().getSuperclass();
-                if(Collider.class.isAssignableFrom(superClass)) detector = detectorMap.get(superClass);
+                if(AbstractCollider.class.isAssignableFrom(superClass)) detector = detectorMap.get(superClass);
                 if(detector == null) {
-                    System.err.println("No entries for the Collider types: " + a.getClass().getSimpleName() + " and " + b.getClass().getSimpleName() + " were found nor for their superclasses. Dont't use Colliders of a type that you don't specify a CollisionChecker for.");
+                    System.err.println("No entries for the AbstractCollider types: " + a.getClass().getSimpleName() + " and " + b.getClass().getSimpleName() + " were found nor for their superclasses. Dont't use Colliders of a type that you don't specify a CollisionChecker for.");
                     return null;
                 }
-                System.err.println("Collision Manager had to fall back to superclass of Collider: "+a.getClass().getSimpleName()+". Try not to use Colliders of a type that you dont specify a CollisionChecker for.");
+                System.err.println("Collision Manager had to fall back to superclass of AbstractCollider: "+a.getClass().getSimpleName()+". Try not to use Colliders of a type that you dont specify a CollisionChecker for.");
             }
-            // ?
-            return detector.getCollision(b, a).reverse();
+            return detector.getCollision(b, a);
         }
-        CollisionDetector detector = detectorMap.get(b.getClass());
+        ICollisionDetector detector = detectorMap.get(b.getClass());
         if(detector == null) {
             Class<?> superClass = b.getClass().getSuperclass();
-            if(Collider.class.isAssignableFrom(superClass)) detector = detectorMap.get(superClass);
+            if(AbstractCollider.class.isAssignableFrom(superClass)) detector = detectorMap.get(superClass);
             if(detector == null) {
-                System.err.println("No entries for the Collider types: " + a.getClass().getSimpleName() + " and " + b.getClass().getSimpleName() + " were found nor for their superclasses. Dont't use Colliders of a type that you don't specify a CollisionChecker for.");
+                System.err.println("No entries for the AbstractCollider types: " + a.getClass().getSimpleName() + " and " + b.getClass().getSimpleName() + " were found nor for their superclasses. Dont't use Colliders of a type that you don't specify a CollisionChecker for.");
                 return null;
             }
-            System.err.println("Collision Manager had to fall back to superclass of Collider: "+b.getClass().getSimpleName()+". Try not to use Colliders of a type that you dont specify a CollisionChecker for.");
+            System.err.println("Collision Manager had to fall back to superclass of AbstractCollider: "+b.getClass().getSimpleName()+". Try not to use Colliders of a type that you dont specify a CollisionChecker for.");
         }
         return detector.getCollision(a, b);
-    }
-
-    public static class Builder {
-
-        private static Map<Class<? extends Collider>, Map<Class<? extends Collider>, CollisionDetector<?, ?>>> buildDetectors;
-        private static Iterable<List<? extends Collider>> buildColliderHolder;
-
-        static {
-            buildDetectors = new HashMap<>();
-            buildColliderHolder = null;
-        }
-
-        public static void setColliderHolder(Iterable<List<? extends Collider>> colliderHolder) {
-            buildColliderHolder = colliderHolder;
-        }
-
-        public static CollisionDetectionSystem build() {
-            if(buildColliderHolder == null) {
-                System.err.println("No ColliderHolder was set for CollisionDetectionSystem.Builder. Returned null.");
-                return null;
-            }
-            return new CollisionDetectionSystem(buildColliderHolder, buildDetectors);
-        }
-
-        public static void addCollisionDetectorsFromInnerClasses(Class<?> outerClass) {
-            Class<?>[] innerClasses = outerClass.getDeclaredClasses();
-            for(Class <?> c : innerClasses) {
-                if(!CollisionDetector.class.isAssignableFrom(c)) {
-                    System.err.format("Subclass %s in class %s does not implement the CollisionDetector interface: Skipped.", c.getSimpleName(), outerClass.getSimpleName());
-                    continue;
-                }
-                try {
-                    addSingleCollisionDetector((CollisionDetector) c.newInstance());
-                }
-                catch(IllegalAccessException e) {
-                    System.err.format("Access modifier of the standard constructor in every subclass has to be public: Could not register subclass %s in class %s.", c.getSimpleName(), outerClass.getSimpleName());
-                }
-                catch(InstantiationException e) {
-                    System.err.format("Instantiation of subclass %s in class %s failed. This might be due to a missing standard constructor in this subclass or an exception thrown by it.", c.getSimpleName(), outerClass.getSimpleName());
-                    e.printStackTrace();
-                }
-            }
-        }
-
-        @SuppressWarnings({"unchecked", "Duplicates"})
-        public static void addSingleCollisionDetector(CollisionDetector detector) {
-            Type[] genericTypes = ((ParameterizedType) detector.getClass().getGenericInterfaces()[0]).getActualTypeArguments();
-
-            //check for overwrite
-            if(buildDetectors.get(genericTypes[0]) != null) {
-                if(buildDetectors.get(genericTypes[0]).get(genericTypes[1]) != null) {
-                    System.out.format("CollisionDetector for Collider types %s and %s was overwritten. Ignore if this is on purpose.", ((Class<?>) genericTypes[0]).getSimpleName(), ((Class<?>) genericTypes[1]).getSimpleName());
-                }
-            }
-            buildDetectors.put((Class<? extends Collider>) genericTypes[0], new HashMap<Class<? extends Collider>, CollisionDetector<?, ?>>());
-            buildDetectors.get(genericTypes[0]).put((Class<? extends Collider>) genericTypes[1], detector);
-        }
     }
 
 }

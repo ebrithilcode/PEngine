@@ -1,292 +1,211 @@
 package com.pengine;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import com.pengine.collisiondetection.colliders.Collider;
-import com.pengine.components.Component;
-import com.pengine.components.Connection;
-import com.pengine.components.AbstractRenderer;
+import com.pengine.collisiondetection.Collision;
+import com.pengine.collisiondetection.colliders.AbstractCollider;
+import com.pengine.collisiondetection.colliders.ICollider;
+import com.pengine.rendering.IRenderer;
+import processing.core.PConstants;
 import processing.core.PVector;
 
-import static com.pengine.PEngine.APPLET;
+public class Entity implements IUpdatable, IKillable {
 
-public class Entity {
+    protected PEngine parent;
 
-    //List<Component> components;
-    List<Collider> colliders;
-    List<AbstractRenderer> renderers;
+    protected IRenderer renderer;
+    protected ICollider collider;
 
-    public processing.core.PVector position;
-    public processing.core.PVector heading;
-    public float orientation;
+    protected PVector position;
+    protected PVector velocity;
+    protected float rotation;
 
-    public float mass;
-    public float surfaceFriction;
+    protected AABB bounds;
 
-    boolean isDead;
-    float deltaTime;
+    protected float mass;
+    protected float asperity; // = roughness of a surface
 
-    public List<processing.core.PVector> additionalForces;
-    public float maxRadius;
+    protected boolean isDead;
+    protected boolean isActive;
 
-    AABB bounds;
-    //Bewegungen
-    PVector vel;
+    protected boolean rotationLocked;
+    protected boolean movementLocked;
 
-    //Kreisofrequenz
-    float omega;
-    boolean lockRotation;
-    public float collisionEfficency;
-
-    public int renderingPriority;
-
-    public List<Collider> collisionsDuringFrame;
-    public List<Collider> collisionsPreviousFrame;
-
-    //Networking relevant
-    public int objectID = -1;
-    public PEngine engine;
-
-
-    {
-        dontSendMePlease = false;
+    //public constructor for full control, factory methods to be used otherwise
+    public Entity(PVector position, PVector velocity, float rotation, float mass, float asperity, boolean rotationLocked, boolean movementLocked) {
+        this.position = position;
+        this.velocity = velocity;
+        this.rotation = rotation;
+        this.mass = mass;
+        this.asperity = asperity;
+        this.rotationLocked = rotationLocked;
+        this.movementLocked = movementLocked;
+        isDead = false;
+        isActive = true;
     }
 
-    public GameObject() {
-        components = new ArrayList<>();
-        pos = new PVector(0,0);
-        mass = 1;
-        dead = false;
-        friction = 0f;
-        vel = new PVector(0,0);
-        collisionEfficency = 1;
-
-        collisionsDuringFrame = new ArrayList<>();
-        collisionsPreviousFrame = new ArrayList<>();
+    public static Entity createDefaultEntity(float x, float y, float rotation) {
+        return new Entity(new PVector(x, y), new PVector(0, 0), rotation, 1, 1, false, false);
     }
 
-    public void kill() {
-        dead = true;
+    public static Entity createBasicEntity(float x, float y, float rotation, ICollider collider, IRenderer renderer) {
+        Entity entity = createDefaultEntity(x, y, rotation);
+        entity.collider = collider;
+        entity.renderer = renderer;
+        return entity;
     }
 
-    public <T extends Component> List<T> getAllComponentsOfType(Class<T> cl) {
-        List<T> allComponentsOfType = new ArrayList<>();
-        for (Component c: components) {
-            if (cl.isInstance(c)) {
-                if (c.active) allComponentsOfType.add(cl.cast(c));
-            }
-        }
-        //if(allComponentsOfType.isEmpty()) return Collections.emptyList();
-        return allComponentsOfType;
+    public static Entity createBasicEntity(float x, float y, float rotation, AbstractCollider collider) {
+        return createBasicEntity(x, y, rotation, collider, collider.getDefaultRenderer());
     }
 
-    public <T extends Component> T getComponentOfType(Class<T> cl) {
-        for (Component c: components) {
-            if (cl.isInstance(c)) {
-                if (c.active) return cl.cast(c);
-            }
-        }
-        return null;
+    public static Entity createImmobileEntity(float x, float y, float rotation) {
+        return new Entity(new PVector(x, y), new PVector(0, 0), rotation, 1, 1, true, true);
     }
-
-    public void addComponent(Component c) {
-        components.add(c);
-    }
-
-    public void removeComponent(Class<? extends Component> cl) {
-        for (Component c : components) {
-            if(cl.isInstance(c)) {
-                components.remove(c);
-                return;
-            }
-        }
-    }
-
-    void removeAllComponent(Class<? extends Component> cl) {
-        for (int i=components.size()-1; i>=0;i--) {
-            Component c = components.get(i);
-            if(cl.isInstance(c)) {
-                components.remove(c);
-            }
-        }
-    }
-
-    public void addVelocity(PVector v) {
-        vel.add(v);
-        for (Component c: components) {
-            if (c instanceof Connection) {
-                ((Connection)c).apply(v,0);
-            }
-        }
-    }
-    public void addVelocityDiscret(PVector v) {
-        vel.add(v);
-    }
-
-    public void addAngularVelocity(float f) {
-        if (!lockRotation) {
-            omega += f;
-            for (Component c: components) {
-                if (c instanceof Connection) {
-                    ((Connection)c).apply(new PVector(0,0), 0);
-                }
-            }
-        }
-    }
-
-    public void shift(PVector v) {
-        pos.add(v);
-        // for (Component c: components) {
-        //   if (c instanceof Connection) {
-        //     ((Connection)c).connected.shift(v);
-        //   }
-        // }
-    }
-    public PVector getMassCenter() {
-        for (Component c: components) {
-            if (c instanceof Connection) {
-                return ((Connection)c).getMassCenter();
-            }
-        }
-        return pos.copy();
-    }
-    public float getMass() {
-        // for (Component c: components) {
-        //   if (c instanceof Connection) {
-        //     return ((Connection)c).getMass();
-        //   }
-        // }
-        return mass;
-    }
-    public void render() {
-        for (Component c: components) {
-            if (c instanceof AbstractRenderer) {
-                ((AbstractRenderer)c).show();
-            }
-        }
-    }
-
-    public boolean onCollision(Collider other, PVector out, Collider mine) {
-        mine.isColliding.add(other);
-        collisionsDuringFrame.add(other);
-        if (!mine.wasColliding.contains(other)) {
-            onCollisionEnter(other, mine);
-        }
-        return true;
-    }
-
-    public void onCollisionEnter(Collider other, Collider mine) {}
-
-    public void onCollisionLeave(Collider other, Collider mine) {
-    }
-
-    public void handleKey(boolean pressed) {}
-
-    void setup() {
-        bounds = getBoundary();
-    }
-
-    public boolean earlyUpdate() {
-        deltaTime = 1f/APPLET.frameRate;
-        for (Component c: components) {
-            c.earlyUpdate();
-        }
-        collisionsPreviousFrame = new ArrayList<>(collisionsDuringFrame);
-        //benchmark?
-        //collisionsPreviousFrame = (ArrayList<Collider>) ((ArrayList<Collider>)collisionsDuringFrame).clone();
-        collisionsDuringFrame.clear();
-        return false;
-    }
-
-    public boolean update() {
-        for (Component c: components) {
-            c.update();
-        }
-        return false;
-    }
-
-    public boolean lateUpdate() {
-        for (Component c: components) {
-            c.lateUpdate();
-        }
-        return false;
-    }
-
-    public void movement() {
-        //Bewegung managen
-        pos.add(new PVector((vel.x * deltaTime), (vel.y * deltaTime)));
-        rot += omega * deltaTime;
-        bounds = getBoundary();
-        for (Component c: components) {
-            c.movement();
-        }
-    }
-
-    public void lateCollisionSetup() {
-        List<Collider> allColliders = getAllComponentsOfType(Collider.class);
-        for (Collider c : allColliders) {
-            for (Collider cm : c.wasColliding) {
-                if (!c.isColliding.contains(cm)) onCollisionLeave(cm, c);
-            }
-            c.wasColliding = new ArrayList<>(c.isColliding);
-            //c.wasColliding.addAll(c.isColliding);
-            c.isColliding.clear();
-        }
-    }
-
-    public Boundary getBoundary() {
-        float left = pos.x + (vel.x<0 ? vel.x : 0) - maxRadius;
-        float right = pos.x + (vel.x>0 ? vel.x : 0) + maxRadius;
-        float up = pos.y + (vel.y<0 ? vel.y : 0) - maxRadius;
-        float down = pos.y + (vel.y>0 ? vel.y : 0) + maxRadius;
-        return new Boundary(new PVector(left,up), new PVector(right-left, down-up));
-    }
-
-
-    //Data type methods:
-
-    public static GameObject createData(byte[] b, int... index) {
-        GameObject g = new GameObject();
-        //Skip class ID;
-        index[0]++;
-        g.objectID = index[0]++;
-        g.pos = PVector.createData(b, index);
-        int comNum = b[index[0]++];
-        for (int i=0;i<comNum;i++) {
-            g.components.add((Component) Component.createData(b, index));
-            g.components.get(i).parent = g;
-        }
-        return g;
-    }
-
 
     @Override
-    public String toString() {
-        String ret = "";
-        ret += classID;
-        ret += objectID;
-        ret += pos.toString();
-        ret += (char) components.size();
-        for (int i=0;i<components.size();i++) {
-            ret += components.get(i).toString();
-        }
-        return ret;
+    public void earlyUpdate() {}
+
+    @Override
+    public void update() {}
+
+    @Override
+    public void lateUpdate() {}
+
+    public boolean hasCollider() {
+        return collider != null;
     }
 
-    public void updateData(byte[] b, int... index) {
-        //Skip class and object id
-        index[0] += 2;
-        if (b[index[0]+1] == pos.objectID)
-            pos.updateData(b, index);
+    //It's a square atm, should probably work different
+    //TODO: idk what to do about this, it kind of defeats the purpose of having AABBs... Use circles instead?
+    /*public AABB generateBounds() {
+        collider.getVertices();
+        bounds = new AABB()
+    }*/
+
+    /*-------------------------------------- getters/setters + utility methods --------------------------------------*/
+
+    //---- mass ----
+
+    public float getMass() {
+        return mass;
+    }
+
+    public boolean hasRenderer() {
+        return renderer != null;
+    }
+
+    //---- bounds ----
+
+    public void move(PVector vector) {
+        position.add(vector);
+    }
+
+    public void rotate(float deltaRotation) {
+        rotation = (rotation + deltaRotation) % PConstants.TAU;
+    }
+
+    //---- colliders ----
+
+    //TODO: Collision handling
+    public void onCollision(Collision collision) {}
+
+    public void setMass(float mass) {
+        if(mass < 0)
+            this.mass = 0;
         else
-            pos = PVector.createData(b, index);
-
-        for (int i=0;i<b[index[0]++];i++) {
-            if (b[index[0]+1] == components.get(i).objectID)
-                components.get(i).updateData(b, index);
-            else
-                components.add(i, (Component) Component.createData(b, index));
-        }
+            this.mass = mass;
     }
+
+    /*public void deleteCollider() {
+        setCollider(null);
+    }*/
+
+    //---- renderables ----
+
+    public AABB getBounds() {
+        return bounds;
+    }
+
+    public void setBounds(AABB bounds) {
+        this.bounds = bounds;
+    }
+
+    public ICollider getCollider() {
+        return collider;
+    }
+
+    //---- rotation and position ----
+
+    public void setCollider(ICollider collider) {
+        this.collider = collider;
+    }
+
+    //returns array instead of list so that it can be handled with more easily,
+    //while also preventing changes to the list being made w/o setters.
+    //efficiency should not matter here since the PEngine class accesses IRenderables of a client differently.
+    public IRenderer getRenderer() {
+        return renderer;
+    }
+
+    public void setRenderer(IRenderer renderer) {
+        this.renderer = renderer;
+    }
+
+    public void deleteRenderer() {
+        setRenderer(null);
+    }
+
+    public float getRotation() {
+        return rotation;
+    }
+
+    public void setRotation(float rotation) {
+        this.rotation = rotation;
+    }
+
+    public float getPosX() {
+        return position.x;
+    }
+
+    public void setPosX(float x) {
+        position.x = x;
+    }
+
+    public float getPosY() {
+        return position.y;
+    }
+
+    public void setPosY(float y) {
+        position.y = y;
+    }
+
+    /*-------------------------------------- IKillable methods --------------------------------------*/
+
+    public PVector getPosition() {
+        return position;
+    }
+
+    public void setPosition(PVector position) {
+        this.position = position;
+    }
+
+    /*-------------------------------------- static factory methods --------------------------------------*/
+
+    public PEngine getParent() {
+        return parent;
+    }
+
+    public void setParent(PEngine parent) {
+        this.parent = parent;
+    }
+
+    @Override
+    public boolean isDead() {
+        return isDead;
+    }
+
+    @Override
+    public boolean kill() {
+        return isDead = true; //TODO: is this valid syntax? idk
+    }
+    
 }

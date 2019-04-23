@@ -1,14 +1,13 @@
 package com.pengine.collisiondetection;
 
+import com.pengine.collisiondetection.colliders.AbstractCollider;
+import com.pengine.collisiondetection.colliders.CircleCollider;
+import processing.core.PApplet;
+import processing.core.PVector;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
-import com.pengine.collisiondetection.colliders.Collider;
-import com.pengine.collisiondetection.colliders.CircleCollider;
-import processing.core.PVector;
-
-import static com.pengine.PEngine.APPLET;
 
 @Deprecated
 public class SAT {
@@ -19,7 +18,7 @@ public class SAT {
     collisions = new ArrayList<>();
   }
 
-  public PVector[] isColliding(Collider c1, Collider c2) {
+  public PVector[] isColliding(AbstractCollider c1, AbstractCollider c2) {
     PVector collisionPoint = new PVector(0,0);
     //Circle circle
     if (c1 instanceof CircleCollider && c2 instanceof CircleCollider) {
@@ -50,7 +49,7 @@ public class SAT {
     boolean one = c1 instanceof CircleCollider || c2 instanceof CircleCollider;
 
     if (switched) {
-      Collider help = c1;
+      AbstractCollider help = c1;
       c1 = c2;
       c2 = help;
     }
@@ -63,7 +62,7 @@ public class SAT {
         return new PVector[] {new PVector(0, 0)};
       }
 
-      if (APPLET.abs(test.out2) < APPLET.abs(bVal)) {
+      if (PApplet.abs(test.out2) < PApplet.abs(bVal)) {
         bVal = test.out2;
         best = n.copy();
         bestORet = test;
@@ -129,7 +128,7 @@ public class SAT {
     ret.out2 = 0;
     if (circle==0) {
       if (inbetween(x1,x2,y1) || inbetween(x1, x2, y2) || inbetween(y1, y2, x1)) {
-        if (APPLET.abs(x1 - y2) < APPLET.abs(x2 - y1)) {
+        if (PApplet.abs(x1 - y2) < PApplet.abs(x2 - y1)) {
           ret.out2 = x1 - y2;
           ret.p1 = px1.truePoint;
           ret.p2 = py2.truePoint;
@@ -141,7 +140,7 @@ public class SAT {
       }
     } else if (circle==2) {
       if (inbetween(x1, x2, y1+y2) || inbetween(x1, x2, y1 - y2) || inbetween(y1 - y2, y1 + y2, x1)) {
-        if (APPLET.abs(x2 - (y1 - y2)) < APPLET.abs(x1 - (y1 + y2))) {
+        if (PApplet.abs(x2 - (y1 - y2)) < PApplet.abs(x1 - (y1 + y2))) {
           ret.out2 = x2 - (y1 - y2);
           ret.p1 = px2.truePoint;
           ret.p2 = py1.truePoint;
@@ -157,7 +156,7 @@ public class SAT {
 
   PVector circleCircle(CircleCollider c1, CircleCollider c2) {
     PVector ret = c2.globalPoints[0].copy().sub(c1.globalPoints[0]);
-    ret.setMag(APPLET.max((c1.radius + c2.radius) - ret.mag(), 0));
+    ret.setMag(PApplet.max((c1.radius + c2.radius) - ret.mag(), 0));
     return ret;
   }
   OverlapReturn circleRect(PVector[] p1, PVector[] p2, PVector aim, float rad) {
@@ -207,10 +206,10 @@ public class SAT {
   //Brute force
   /*void manageCollisions(List<GameObject> objects) {
     for (int i=0;i<objects.size()-1;i++) {
-      List<Collider> possibles1 = objects.get(i).getAllComponentsOfType(Collider.class);
-      for (Collider c1: possibles1) {
+      List<AbstractCollider> possibles1 = objects.get(i).getAllComponentsOfType(AbstractCollider.class);
+      for (AbstractCollider c1: possibles1) {
         for (int o=i+1;o<objects.size();o++) {
-          for (Collider c2: objects.get(o).getAllComponentsOfType(Collider.class)) {
+          for (AbstractCollider c2: objects.get(o).getAllComponentsOfType(AbstractCollider.class)) {
             if (!c1.blackList.contains(c2) && !c2.blackList.contains(c1)) {
               PVector[] p = isColliding(c1,c2);
               if (p[0].mag()!=0) {
@@ -228,10 +227,10 @@ public class SAT {
 
   public void manageCollisions(List<GameObject> obs1, List<GameObject> obs2) {
         for (int i=0;i<obs1.size();i++) {
-            List<Collider> possibles1 = obs1.get(i).getAllComponentsOfType(Collider.class);
-            for (Collider c1: possibles1) {
+            List<AbstractCollider> possibles1 = obs1.get(i).getAllComponentsOfType(AbstractCollider.class);
+            for (AbstractCollider c1: possibles1) {
                 for (int o=i+1;o<obs2.size();o++) {
-                    for (Collider c2: obs2.get(o).getAllComponentsOfType(Collider.class)) {
+                    for (AbstractCollider c2: obs2.get(o).getAllComponentsOfType(AbstractCollider.class)) {
                         if (!c1.blackList.contains(c2) && !c2.blackList.contains(c1)) {
                             PVector[] p = isColliding(c1,c2);
                             if (p[0].mag()!=0) {

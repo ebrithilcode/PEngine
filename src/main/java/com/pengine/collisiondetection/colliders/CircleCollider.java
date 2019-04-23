@@ -1,63 +1,60 @@
 package com.pengine.collisiondetection.colliders;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import com.pengine.GameObject;
-import com.pengine.components.Collider;
+import com.pengine.Entity;
+import com.pengine.rendering.AbstractRenderer;
+import com.pengine.rendering.CircleRenderer;
 import processing.core.PVector;
 
-public class CircleCollider extends Collider {
+public class CircleCollider extends AbstractCollider {
 
-    PVector off;
-    public float radius;
+    private float radius;
+    private PVector center;
 
-    {
-        off = new PVector(0,0);
-        globalPoints = new PVector[] {new PVector(0,0)};
+    public CircleCollider(Entity parent, float radius, PVector center) {
+        super(parent);
+        this.radius = radius;
+        this.center = center;
     }
 
-    public CircleCollider(GameObject g) {
-        super(g);
+    public CircleCollider(Entity parent, float radius) {
+        this(parent, radius, new PVector(parent.getPosX(), parent.getPosY()));
     }
 
-    public List<PVector> getCollisionNormals(Collider other) {
-        List<PVector> ret = new ArrayList<>();
-        PVector norm1 = other.closestPoint(off.copy().add(parent.pos));
-        ret.add(new PVector(-norm1.y, norm1.x));
-        return ret;
-    }
-
-    public PVector closestPoint(PVector p) {
-        PVector diff = off.copy().add(parent.pos).sub(p);
-        diff.setMag(diff.mag()-radius);
-        return diff.add(p);
-    }
-
-    @Override
-    public boolean earlyUpdate() {
-        super.earlyUpdate();
-        globalPoints[0] = off.copy().add(parent.pos);
-        return false;
-    }
-
-    @Override
-    public void movement() {
-        globalPoints[0] = off.cadd(parent.pos);
-    }
-
-    public void setRadius(float v) {
-        radius = v;
-        parent.maxRadius = v;
-    }
-
-    public void setOff(PVector v) {
-        off = v;
-    }
     public float getRadius() {
         return radius;
     }
-    public PVector getOff() {
-        return off;
+
+    public PVector getCenter() {
+        return center;
+    }
+
+    @Override
+    public void onParentMove(PVector move) {
+        center.add(move);
+    }
+
+    @Override
+    public void onParentRotate(float rotation) {
+        if(center.x == parent.getPosX() && center.y == parent.getPosY()) return;
+        center.sub(parent.getPosition());
+        center.rotate(rotation);
+        center.add(parent.getPosition());
+    }
+
+    @Override
+    public PVector closestPoint(PVector otherPoint) {
+        PVector diff = PVector.sub(center, otherPoint);
+        diff.setMag(diff.mag()-radius); //TODO: Any optimization for this? Seems to be optimizable
+        return diff.add(otherPoint);
+    }
+
+    @Override
+    public float getMaxCenterDist() {
+        return center.dist(parent.getPosition()) + radius;
+    }
+
+    @Override
+    public AbstractRenderer getDefaultRenderer() {
+        return new CircleRenderer();
     }
 }

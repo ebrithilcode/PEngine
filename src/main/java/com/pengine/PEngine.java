@@ -1,276 +1,207 @@
 package com.pengine;
 
-import com.pengine.collisiondetection.SAT;
-import com.pengine.collisiondetection.holderimpl.QuadTree;
+import com.pengine.collisiondetection.CollisionDetectionSystem;
+import com.pengine.collisiondetection.colliders.AbstractCollider;
+import com.pengine.net.server.ServerHandler;
+import com.pengine.rendering.IRenderer;
 import processing.core.PApplet;
+import processing.core.PVector;
 
 import java.util.ArrayList;
-import java.util.List;
-import java.util.HashMap;
-
-import com.pengine.InputInternet.ClientConnection;
-import com.pengine.InputInternet.ServerConnection;
-import com.pengine.InputInternet.Input;
-import com.pengine.InputInternet.Data;
-import com.pengine.components.Collider;
-import com.pengine.rendering.renderers.*;
-import processing.core.PVector;
+import java.util.Iterator;
+import java.util.TreeSet;
 
 public class PEngine {
 
-  public static PApplet APPLET;
-  public static PEngine ENGINE;
+    public static PApplet APPLET;
+    public float floorFriction = 1.0f;
+    public boolean useFloorFriction;
+    public ArrayList<PVector> globalForces = new ArrayList<>();
+    public PhysicsThread pt = new PhysicsThread();
+    float maxMove = 0.1f;
+    int steps = 1;
+    private TreeSet<IRenderer> renderables;
+    //private Set<AbstractCollider> colliders;
 
+    private CollisionDetectionSystem cds;
+    //private PhysicsSystem ps;
 
-  public EngineList engineList = new EngineList();
+    private ServerHandler serverHandler;
 
-  private SAT sat;
-  private QuadTree qt;
-  float maxMove = 0.1f;
-  int steps = 1;
-  public float floorFriction = 1.0f;
-  public boolean useFloorFriction;
-  public ArrayList<PVector> globalForces = new ArrayList<>();
+    public PEngine(PApplet applet) {
+        APPLET = applet;
+        APPLET.registerMethod("draw", this);
+        APPLET.registerMethod("dispose", this);
 
-  public int backgroundColor;
-
-  public PhysicsThread pt = new PhysicsThread();
-
-  public Input userInput;
-
-  //Networking relevant
-  public HashMap<Class<? extends Data>, Integer> classToId;
-  public HashMap<Integer, Class<? extends Data>> idToClass;
-  ClientConnection client;
-  ServerConnection server;
-  private int uniqueObjId = 0;
-
-  public PEngine(PApplet applet) {
-    APPLET = applet;
-    ENGINE = this;
-  }
-
-  void setup() {
-    classToId = new HashMap<>();
-    idToClass = new HashMap<>();
-    registerClass(GameObject.class);
-    registerClass(RectRenderer.class);
-    registerClass(CircleRenderer.class);
-
-
-    APPLET.ellipseMode(APPLET.RADIUS);
-    APPLET.imageMode(APPLET.CENTER);
-    APPLET.rectMode(APPLET.CENTER);
-    sat = new SAT();
-    qt = new QuadTree(sat);
-    qt.room = new Boundary(new PVector(0,0), new PVector(APPLET.width, APPLET.height));
-    qt.room.infinite = true;
-    backgroundColor = APPLET.color(255);
-
-    System.out.println("Got a new QuadTree: "+qt);
-    pt.start();
-
-  }
-
-  void draw() {
-    APPLET.background(backgroundColor);
-
-    List<GameObject> objects = engineList.getObjects();
-    for (int i=0;i<objects.size();i++) {
-      objects.get(i).render();
+        renderables = new TreeSet<>();
     }
-  }
-  float getMaxSpeed() {
-    float max = Float.MIN_VALUE;
-    for (GameObject g: engineList.getObjects()) {
-      max = APPLET.max(max, g.vel.mag());
-    }
-    return max;
-  }
 
-  public void addObject(GameObject g) {
-
-    g.engine = this;
-
-    if (g.objectID >0) {
-      g.objectID = uniqueObjId;
-      uniqueObjId++;
+    public static PEngine createServer(PApplet applet, int port, Object[] finalData, String clientEventListeningMethod) {
+        PEngine engine = new PEngine(applet);
+        engine.serverHandler = new ServerHandler(engine, port, finalData, clientEventListeningMethod);
+        return engine;
     }
-    boolean inserted = false;
-      List<GameObject> objects = engineList.getObjects();
-    for (int i=0;i<objects.size();i++) {
-      if (objects.get(i).renderingPriority > g.renderingPriority) {
-        engineList.addObject(i, g);
-        inserted = true;
-        break;
-      }
-    }
-    if (!inserted) objects.add(g);
-    g.setup();
-    qt.sortIn(g);
-  }
-  public void createData(byte[] bytes, int[] iterator, String ip) {
-    try {
-        Data d = (Data) idToClass.get(bytes[iterator[0]]).getMethod("createData", byte[].class, int[].class).invoke(bytes, iterator);
-        d.ip = ip;
-        if (d instanceof GameObject) addObject((GameObject) d);
-        else if (d instanceof Input) engineList.addInput((Input)d);
-        else if (server != null) engineList.addClientData(d);
-        else if (client != null) engineList.addServerData(d);
-    } catch (Exception e) {}
-  }
-  //hier braucht es einen cleveren Weg sich in die Processing keyhooks einzuklinken
-  void keyPressed() {
-    userInput.manageKey(APPLET.key, true);
-    for (GameObject g: engineList.getObjects()) {
-      g.handleKey(true);
-    }
-  }
 
-  void keyReleased() {
-    userInput.manageKey(APPLET.key, false);
-    for (GameObject g: engineList.getObjects()) {
-      g.handleKey(false);
+    public ServerHandler getRenderHandler() {
+        return serverHandler;
     }
-  }
 
-  void mousePressed() {}
-  void mouseReleased() {}
-
-  Collider noCollision(GameObject g) {
-    List<Collider> possible = g.getAllComponentsOfType(Collider.class);
-    Collider c1 = null;
-    for (Collider c : possible) {
-      if (!c.isTrigger) c1 = c;
+    public void draw() {
+        render();
+        update();
     }
-    if (c1 == null) return null;
-    for (GameObject go : engineList.getObjects()) {
-      if (go != g) {
-          possible = go.getAllComponentsOfType(Collider.class);
-          Collider c2 = null;
-          for (Collider c : possible) {
-            if (!c.isTrigger) c2 = c;
-          }
-        if (c2 == null) continue;
-        if (sat.isColliding(c1,c2)[0].mag()>0 && !c1.blackList.contains(c2) && !c2.blackList.contains(c1)) {
-          return c2;
+
+    public void dispose() {
+        if(serverHandler != null) serverHandler.dispose();
+    }
+
+    public void killEntity(Entity entity) {
+        entity.kill();
+        entities.remove(entity);
+        //cleanup renderer references, prob. outsource to other method
+    }
+
+    public boolean registerRenderable(IRenderer renderable) {
+        return renderables.add(renderable);
+    }
+
+    public boolean unregisterRenderable(IRenderer renderable) {
+        return renderables.remove(renderable);
+    }
+
+    public boolean registerCollider(AbstractCollider collider) {
+        return cds.addCollider(collider);
+    }
+
+    public boolean unregisterCollider(AbstractCollider collider) {
+        return cds.removeCollider(collider;
+    }
+
+    public Iterable<IRenderer> getRenderables() {
+        return renderables;
+    }
+
+
+    public void addCollider(AbstractCollider collider) {
+        engineColliders.add(collider);
+        cds.addCollider(collider);
+    }
+
+    private void render() {
+        APPLET.pushStyle();
+        APPLET.rectMode(APPLET.CENTER);
+        APPLET.ellipseMode(APPLET.CENTER);
+        APPLET.imageMode(APPLET.CENTER);
+        APPLET.shapeMode(APPLET.CENTER);
+
+        //go through weak referenced renderables, that are assigned to entites, etc.
+        for(Iterator<IRenderer> rendererIterator = renderables.iterator(); rendererIterator.hasNext();) {
+            IRenderer currentRenderer = rendererIterator.next();
+            if(currentRenderer.v) {
+                referenceIterator.remove();
+                continue;
+            }
+            renderable.render();
         }
-      }
-    }
-    return null;
-  }
 
-  //Networking relevant
-
-  public <T extends Data> void registerClass(Class<T> cl) {
-    if (!classToId.containsKey(cl)) {
-      int val = classToId.size();
-      classToId.put(cl, val);
-      idToClass.put(val, cl);
-    } else System.out.println("Already contained");
-  }
-
-  public void startServer() {
-    server = new ServerConnection(this);
-    server.start();
-  }
-  public void startServer(int port) {
-    server = new ServerConnection(this);
-    server.port = port;
-    server.startServer();
-    server.start();
-  }
-  public void startClient() {
-    client = new ClientConnection(this);
-    client.connect();
-    client.start();
-  }
-
-  public void startClient(String ip, int port) {
-    client = new ClientConnection(this);
-    client.ip = ip;
-    client.port = port;
-    client.connect();
-    client.start();
-  }
-  public void stopServer() {
-    server.end();
-  }
-  public void stopClient() {
-    client.end();
-  }
-
-  public void useData(byte[] bytes, String ip) {
-    bytes = Data.decodeBytes(bytes);
-    int[] iterator = new int[] {0};
-    while (iterator[0] < bytes.length) {
-      Data d = dataAlreadyExists(bytes[iterator[0]+1]);
-      if (d==null) {
-        createData(bytes, iterator, ip);
-      } else {
-        d.updateData(bytes, iterator);
-      }
-    }
-  }
-
-  Data dataAlreadyExists(int id) {
-    for (Data d: engineList.getObjects()) {
-      if (d.objectID == id) return d;
-    }
-    for (Data d: engineList.getInputs()) {
-      if (d.objectID==id) return d;
-    }
-    for (Data d: engineList.getClientData()) {
-      if (d.objectID == id) return d;
-    }
-    return null;
-  }
-
-  //Physics
-
-
-  public float  getPhysicsFrameRate() {
-    return 1 / pt.deltaTime;
-  }
-  public float getPhysicsDelta() {
-    return pt.deltaTime;
-  }
-
-
-  class PhysicsThread extends Thread {
-
-    int frameStart;
-    public float deltaTime;
-
-    boolean bruteForce = false;
-    public void run() {
-      while (true) {
-        frameStart = APPLET.millis();
-        managePhysics();
-        APPLET.delay(APPLET.max(0, 17-(APPLET.millis()-frameStart)));
-        deltaTime = (APPLET.millis()-frameStart) / 1000f;
-        frameStart = APPLET.millis();
-      }
-    }
-
-    void managePhysics() {
-      List<GameObject> objects = engineList.getObjects();
-      for (int i=0;i<objects.size();i++) {
-        if (objects.get(i).earlyUpdate()) {
-          objects.remove(i);
-          i--;
+        //go trough additional renderables assigned to the engine itself
+        for(IRenderer renderable : engineRenderables) {
+            renderable.render();
         }
-        objects.get(i).deltaTime = deltaTime;
-      }
-
-      //Hopefully soon quadtree collisionManagement in logn
-      if (!bruteForce) {
-        qt.setup();
-        qt.manage();
 
 
-        //Just n squared at the time
-      } /*else {
+        APPLET.popStyle();
+    }
+
+    private void update() {
+
+    }
+
+    float getMaxSpeed() {
+        float max = Float.MIN_VALUE;
+        for (GameObject g: engineList.getObjects()) {
+            max = APPLET.max(max, g.vel.mag());
+        }
+        return max;
+    }
+
+    public void addEntity(Entity entity) {
+        entity.setParent(this);
+        entity.registerAllRenderers();
+        entity.registerAllColliders();
+    }
+
+    Collider noCollision(GameObject g) {
+        List<Collider> possible = g.getAllComponentsOfType(Collider.class);
+        Collider c1 = null;
+        for (Collider c : possible) {
+            if (!c.isTrigger) c1 = c;
+        }
+        if (c1 == null) return null;
+        for (GameObject go : engineList.getObjects()) {
+            if (go != g) {
+                possible = go.getAllComponentsOfType(Collider.class);
+                Collider c2 = null;
+                for (Collider c : possible) {
+                    if (!c.isTrigger) c2 = c;
+                }
+                if (c2 == null) continue;
+                if (sat.isColliding(c1,c2)[0].mag()>0 && !c1.blackList.contains(c2) && !c2.blackList.contains(c1)) {
+                    return c2;
+                }
+            }
+        }
+        return null;
+    }
+
+
+
+    //Physics
+
+
+    public float  getPhysicsFrameRate() {
+        return 1 / pt.deltaTime;
+    }
+    public float getPhysicsDelta() {
+        return pt.deltaTime;
+    }
+
+
+    class PhysicsThread extends Thread {
+
+        public float deltaTime;
+        int frameStart;
+        boolean bruteForce = false;
+
+        @Override
+        public void run() {
+            while (true) {
+                frameStart = APPLET.millis();
+                managePhysics();
+                APPLET.delay(PApplet.max(0, 17-(APPLET.millis()-frameStart)));
+                deltaTime = (APPLET.millis()-frameStart) / 1000f;
+                frameStart = APPLET.millis();
+            }
+        }
+
+        void managePhysics() {
+            List<GameObject> objects = engineList.getObjects();
+            for (int i=0;i<objects.size();i++) {
+                if (objects.get(i).earlyUpdate()) {
+                    objects.remove(i);
+                    i--;
+                }
+                objects.get(i).deltaTime = deltaTime;
+            }
+
+            //Hopefully soon quadtree collisionManagement in logn
+            if (!bruteForce) {
+                qt.setup();
+                qt.manage();
+
+
+                //Just n squared at the time
+            } /*else {
         for (GameObject g: objects) {
           g.deltaTime = deltaTime;
           g.movement();
@@ -281,36 +212,36 @@ public class PEngine {
       }*/
 
 
-      for (int i=0;i<objects.size();i++) {
-        if (objects.get(i).update()) {
-          objects.remove(i);
-          i--;
-        }
-      }
+            for (int i=0;i<objects.size();i++) {
+                if (objects.get(i).update()) {
+                    objects.remove(i);
+                    i--;
+                }
+            }
 
-      //applies global forces (Like gravity)
-      for (PVector v: globalForces) {
-        for (GameObject g: objects) {
-          if (g.getMass()>0 && !g.noGravity) {
-            g.addVelocity(v.cdiv(g.getMass()*APPLET.frameRate));
-          }
-        }
-      }
+            //applies global forces (Like gravity)
+            for (PVector v: globalForces) {
+                for (GameObject g: objects) {
+                    if (g.getMass()>0 && !g.noGravity) {
+                        g.addVelocity(v.cdiv(g.getMass()*APPLET.frameRate));
+                    }
+                }
+            }
 
-      //Floor friction
-      if (useFloorFriction) {
-        for (GameObject g: objects) {
-          PVector fri = g.vel.cmult(-(g.friction+floorFriction)/2f);
-          g.vel.add(fri);
-        }
-      }
+            //Floor friction
+            if (useFloorFriction) {
+                for (GameObject g: objects) {
+                    PVector fri = g.vel.cmult(-(g.friction+floorFriction)/2f);
+                    g.vel.add(fri);
+                }
+            }
 
-      for (int i=0;i<objects.size();i++) {
-        if (objects.get(i).lateUpdate()) {
-          objects.remove(i);
-          i--;
+            for (int i=0;i<objects.size();i++) {
+                if (objects.get(i).lateUpdate()) {
+                    objects.remove(i);
+                    i--;
+                }
+            }
         }
-      }
     }
-  }
 }

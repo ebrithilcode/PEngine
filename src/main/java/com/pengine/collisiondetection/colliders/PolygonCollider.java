@@ -1,81 +1,69 @@
 package com.pengine.collisiondetection.colliders;
 
-import com.pengine.GameObject;
+import com.pengine.Entity;
 import processing.core.PVector;
 
-import java.util.ArrayList;
-import java.util.List;
+public class PolygonCollider extends AbstractCollider {
 
-import static com.pengine.PEngine.APPLET;
+    //in actual coordinates not relative
+    protected PVector[] vertices;
 
-public class PolygonCollider extends Collider {
-
-    public PVector[] relativeVertices;
-
-    public PolygonCollider(GameObject g) {
-        super(g);
-    }
-
-    public List<PVector> getCollisionNormals(Collider other) {
-        List<PVector> allCollisionNormals = new ArrayList<>();
-        for (int i=0; i<globalPoints.length; i++) {
-            PVector dist = globalPoints[i].csub(globalPoints[(i+1)%globalPoints.length]);
-            allCollisionNormals.add(new PVector(-dist.y, dist.x));
-        }
-        return allCollisionNormals;
+    public PolygonCollider(Entity parent, PVector[] vertices) {
+        super(parent);
+        this.vertices = vertices;
     }
 
     @Override
-    public String getIdentifier() {
-        return "POLYGON";
+    public void onParentMove(PVector move) {
+        for(PVector vertex : vertices) {
+            vertex.add(move);
+        }
     }
 
-    public PVector closestPoint(PVector p) {
-        PVector cl = globalPoints[0];
-        float d = cl.dist(p);
+    @Override
+    public void onParentRotate(float rotation) {
+        for(PVector vertex : vertices) {
+            vertex.sub(parent.getPosition());
+            vertex.rotate(rotation);
+            vertex.add(parent.getPosition());
+        }
+    }
 
-        for (int i=1;i<globalPoints.length;i++) {
-            float c = globalPoints[i].dist(p);
-            if (c<d) {
-                d = c;
-                cl = globalPoints[i];
+    public PVector[] getNormalVectorsOfSides() {
+        PVector[] normals = new PVector[vertices.length];
+        int lastIndex = normals.length-1;
+        for (int i=0; i<lastIndex; i++) {
+            //calculate normal vector of side ([i][i+1])
+            normals[i] = new PVector(vertices[i+1].y - vertices[i].y, vertices[i].x - vertices[i+1].x);
+        }
+        normals[lastIndex] = new PVector(vertices[0].y - vertices[lastIndex].y, vertices[0].x - vertices[lastIndex].x);
+        return normals;
+    }
+
+    //does NOT copy (if it really needs to will add later)
+    @Override
+    public PVector closestPoint(PVector otherPoint) {
+        PVector closestVertex = vertices[0];
+        float smallestDistance = closestVertex.dist(otherPoint);
+        for (int i=1; i < vertices.length; i++) {
+            float distance = vertices[i].dist(otherPoint);
+            if (distance < smallestDistance) {
+                smallestDistance = distance;
+                closestVertex = vertices[i];
             }
         }
-        return cl.copy();
-    }
-
-    public void setPoints() {
-        globalPoints = new PVector[localPoints.length];
-        for (int i = 0;i<localPoints.length; i++) {
-            PVector help = localPoints[i].copy().add(parent.pos);
-            help = rotateVector(help, parent.pos, parent.rot);
-            globalPoints[i] = help;
-        }
-    }
-
-    public void setLocalPoints(PVector[] p) {
-        for (PVector pv : p) {
-            parent.maxRadius = APPLET.max(pv.mag(), parent.maxRadius);
-        }
-        localPoints = p;
-    }
-
-    public void shiftPoints(PVector p) {
-        for (PVector po : localPoints) {
-            po.add(p);
-        }
+        return closestVertex;
     }
 
     @Override
-    public boolean earlyUpdate() {
-        super.earlyUpdate();
-        setPoints();
-        return false;
+    public float getMaxCenterDist() {
+        float greatestDistance = vertices[0].dist(parent.getPosition());
+        for (int i=1; i < vertices.length; i++) {
+            float distance = vertices[i].dist(parent.getPosition());
+            if (distance > greatestDistance) {
+                greatestDistance = distance;
+            }
+        }
+        return greatestDistance;
     }
-
-    @Override
-    public  void movement() {
-        setPoints();
-    }
-
 }
